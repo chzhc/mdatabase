@@ -1,5 +1,5 @@
 ---
-typora-copy-images-to: ..\Pictures\Typora
+typora-root-url: ./pic
 ---
 
 [TOC]
@@ -7,6 +7,22 @@ typora-copy-images-to: ..\Pictures\Typora
 
 
 # C++备忘
+
+## 事件驱动
+
+1、确定响应事件的元素
+
+2、为指定元素确定需要响应的事件类型
+
+3、为指定元素的指定事件编写相应的事件处理程序
+
+4、将事件处理程序绑定到指定元素的指定事件
+
+==构建回调机制==
+
+绑定监听事件，节省系统资源
+
+
 
 ## 函数模板&类模板
 
@@ -52,6 +68,22 @@ namespace ns1{
 ```
 
 ---
+
+## QString 的参数
+
+**QString::arg()//用字符串变量参数依次替代字符串中最小数值**
+
+```c++
+QString i = "iTest";           // current file's number  
+QString total = "totalTest";       // number of files to process  
+QString fileName = "fileNameTest";    // current file's name  
+  
+QString status = QString("Processing file %1 of %2: %3")  
+                .arg(i).arg(total).arg(fileName);  
+qDebug() << status ;
+```
+
+
 
 
 
@@ -707,6 +739,37 @@ void Dialog::mouseReleaseEvent(QMouseEvent *event)
  
 
 ​     亦即：此时创建路径既可以用相对路径，也可以用绝对路径。
+
+
+
+## 根据窗口分配的大小重画resizeEvent
+
+```c++
+// mainwindow.h中
+private:
+    virtual void resizeEvent(QResizeEvent * event);
+
+// mainwindow.cpp中
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+   QWidget::resizeEvent(event) ;
+   if( ui->graphicsView->rect().height()>100){//用来防止窗口大小使用默认值
+       ui->graphicsView->setSceneRect(ui->graphicsView->rect());
+       // to do something...
+   }
+}
+
+```
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1697,7 +1760,103 @@ QCoreApplication :: addLibraryPath（ “C：/ customPath / plugins”）;
 
 该[如何创建Qt的插件](http://doc.qt.io/qt-5/plugins-howto.html)文件概述了您需要注意构建和Qt应用程序部署插件时的问题。
 
+## 进程管理
+
+```c++
+//工程名字为myProcess
+void MainWindow::on_pushButton_clicked()
+{
+     myProcess.start("notepad.exe");
+}
+```
+
+设置外部调用cmd
+
+```c++
+QString program = "cmd.exe";
+    QStringList arguments;
+    arguments << "/c dir&pause";
+    myProcess.start(program, arguments);
+```
+
+```C++
+void MainWindow::showResult()
+{
+    qDebug() << "showResult: " << endl
+            << QString(myProcess.readAll());
+}
+//读取进程返回值
+```
+
+设置外部进程的`readyRead`作为信号，绑定内部`showResult`函数作为槽函数
+
+```c++
+//保证中文编码可读
+QTextCodec::setCodecForCStrings(QTextCodec::codecForLocale());
+```
+
+## 定时
+
+`msleep(1000)`定时1s
+
+
+
+
+
 ## 线程管理
+
+Qt提供了对线程的支持，这包括一组与平台无关的线程类，一个线程安全的发送事件的方式，以及跨线程的信号-槽的关联。这些使得可以很容易的开发可移植的多线程Qt应用程序，可以充分利用多处理器的机器。多线程编程也可以有效的解决在不冻结一个应用程序的用户界面的情况下执行一个耗时的操作的问题。关于线程的内容，大家可以在Qt帮助中参考Thread Support in Qt关键字。
+
+**（一）启动一个线程**
+
+Qt中的`QThread`类提供了平台无关的线程。一个`QThread`代表了一个在应用程序中可以独立控制的线程，它与进程中的其他线程分享数据，但是是独立执行的。相对于一般的程序都是从`main()`函数开始执行，`QThread`从`run()`函数开始执行。默认的，`run()`通过调用`exec()`来开启事件循环。要创建一个线程，需要子类化`QThread`并且重新实现`run()`函数。
+
+每一个线程可以有自己的事件循环，可以通过调用`exec()`函数来启动事件循环，可以通过调用`exit()`或者`quit()`来停止事件循环。在一个线程中拥有一个事件循环，可以使它能够关联其他线程中的信号到本线程的槽上，这使用了队列关联机制，就是在使用`connect()`函数进行信号和槽的关联时，将`Qt::ConnectionType`类型的参数指定为`Qt::QueuedConnection`。拥有事件循环还可以使该线程能过使用需要事件循环的类，比如`QTimer`和`QTcpSocket`类等。注意，在线程中是无法使用任何的部件类的。
+
+向项目中添加新的C++类，类名设置为`MyThread`，基类设置为`QThread`，类型信息选择“继承自QObject”。完成后进入`mythread.h`文件，先添加一个公有函数声明：
+
+```c++
+void stop();
+```
+
+然后再添加一个函数声明和一个变量的定义：
+
+```c++
+protected:
+    void run();
+private:
+    volatile bool stopped;
+```
+
+这里`stopped`变量使用了`volatile`关键字，这样可以使它在任何时候都保持最新的值，从而可以避免在多个线程中访问它时出错。然后进入`mythread.cpp`文件中，先添加头文件`#include <QDebug>`，然后在构造函数中添加如下代码：
+
+```
+stopped = false;
+```
+
+这里将`stopped`变量初始化为`false`。下面添加`run()`函数的定义：
+
+```
+void MyThread::run()
+{
+    qreal i = 0;
+    while (!stopped)
+        qDebug() << QString("in MyThread: %1").arg(i++);
+    stopped = false;
+}
+```
+
+这里一直判断`stopped`变量的值，只要它为`false`，那么就一直打印字符串。下面添加`stop()`函数的定义：
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1950,13 +2109,13 @@ In Linux/X11 platforms, Qt provides support for session management. Sessions all
 
 # 机器人寻路交互界面
 
-
+![873DE99FD84DEF223AC951EEB4284807](/Users/apple/Desktop/markdown/pic/873DE99FD84DEF223AC951EEB4284807.jpg)
 
 ![1523502302792](C:\Users\ZhangConghai\Pictures\Typora\1523502302792.png)
 
+==目标分辨率：==
 
-
-功能分解:
+**功能分解:**
 
 | 功能                      | 实现方式              |
 | ------------------------- | --------------------- |
@@ -1980,7 +2139,7 @@ In Linux/X11 platforms, Qt provides support for session management. Sessions all
 | 当前状态                  |                       |
 |                           |                       |
 
-通信协议内容:
+#### 通信协议内容:
 
 1. 位置
 2. 状态
