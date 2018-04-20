@@ -682,6 +682,60 @@ void Dialog::mouseReleaseEvent(QMouseEvent *event)
 
 
 
+#### 图片白色转透明的方法
+
+一般有两种方法,第一种是读取每个像素的内容然后做颜色匹配,第二种是修改颜色表,将白色更改为透明.
+
+```c++
+
+void ConvertImageToTransparent(QPixmap qPixmap)
+{
+QImage image=qPixmap.toImage();
+image=image.convertToFormat(QImage::Format_ARGB32);
+union myrgb
+{
+uint rgba;
+uchar rgba_bits[4];
+};
+myrgb *mybits=(myrgb*)image.bits();
+intlen = image.width()*image.height();
+while(len-->0)
+{
+mybits->rgba_bits[3]=(mybits->rgba==0xFFFFFFFF)?0:255;
+mybits++;
+}
+}
+
+```
+
+```c++
+QImage TestDialog::getTransImage(QImageimage,QPointponit)
+{
+//判断所取的点是否在图片内部
+if(image.valid(ponit))
+{
+QRgbrgb=image.pixel(ponit);
+QVector<QRgb>rgbVector=image.colorTable();
+for(int i=0;i<rgbVector.size();++i)
+{
+if(rgbVector.at(i)==rgb)
+{
+/*
+注意这里如果要变成黑色背景的话就是QRgbrgb2=QColor(0,0,0,0).rgb();
+留意rgb()与rgba()的区别
+*/
+QRgbrgb2=QColor(0,0,0,0).rgba();
+image.setColor(i,rgb2);
+return image;
+}
+}
+}
+return image;
+}
+```
+
+
+
 
 
 
@@ -1862,11 +1916,41 @@ void MyThread::run()
 
 
 
+https://www.cnblogs.com/hellovenus/p/qt_thread_timer.html
 
+## 正确用法一
 
+在TestThread线程启动后创建定时器。
 
+有些地方需要注意：
 
+**1.不能像下面这样给定时器指定父对象**
 
+否则会出现以下警告：
+
+因为TestThread对象是在主线程中创建的，它的QObject子对象也必须在主线程中创建。所以不能指定父对象为TestThread。
+
+**2.必须要加上事件循环exec()**
+
+否则线程会立即结束，并发出finished()信号。
+
+另外还有一点需要注意，与start一样，定时器的stop也必须在TestThread线程中，否则会出错。
+
+## 正确用法二
+
+无需子类化线程类，通过信号启动定时器。
+
+通过moveToThread()方法改变定时器所处的线程，不要给定时器设置父类，否则该函数将不会生效。
+
+在信号槽连接时，我们增加了一个参数——连接类型，先看看该参数可以有哪些值：
+
+Qt::AutoConnection：默认值。如果接收者处于发出信号的线程中，则使用Qt::DirectConnection，否则使用Qt::QueuedConnection，连接类型由发出的信号决定。
+
+Qt::DirectConnection：信号发出后立即调用槽函数，槽函数在发出信号的线程中执行。
+
+Qt::QueuedConnection：当控制权返还给接收者信号的事件循环中时，开始调用槽函数。槽函数在接收者的线程中执行。
+
+回到我们的例子，首先将定时器所处的线程改为新建的线程，然后连接信号槽，槽函数在定时器所处的线程中执行。
 
 
 
@@ -1888,6 +1972,64 @@ void MyThread::run()
 
 包含两个，1是栈UndoStack，2是压入的UndoCommand类，通常需要重写UndoCommand类（继承QUndoCommand类），主要Imply的Command类中的函数有，undo，redo，id，mergeWith   ，push之后redo会被默认执行， redo以及merge之后会调用isObsolete判断，如果判断结果是True，当前的cmd或者merge的cmd将会被删除。
 无论什么情况cmd压入之后永远在栈顶，并且一但将cmd压入UndoStack，UndoStack拥有所有权，并且没有任何的getter能够访问这个cmd命令，因为一旦对cmd作出修改会导致整个栈结构的损坏。
+
+```c++
+//Undo类的大致逻辑
+class DrawTriangleCommand : public QUndoCommand
+{
+private:
+    SceneController *_controller;   //! 你的绘图控制器
+    TriangleObject *_object;        //! 三角形对象
+     
+public:
+    virtual void undo() override
+    {
+        _controller->remove(_object);
+        _controller->askForUpdate();
+    }    
+     
+    virtual void redo() override
+    {
+        _controller->add(_object);
+        _controller->askForUpdate();
+    }
+};
+ 
+class CanvasView : public QUndoView
+{
+private:
+    QUndoStack *_undoStack;
+    SceneController *_controller;
+ 
+public:
+    virtual bool event(QEvent *e)
+    {
+        if (e->type() == OnAddedTriangle)    //! 在已经添加三角形对象后触发自定义事件
+        {
+            TriangleObject *triangle = /* cast from e */ //! 获取对象
+            _undoStack->push(new DrawTriangleCommand(_controller, triangle));     
+        }
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
