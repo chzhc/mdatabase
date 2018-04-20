@@ -24,6 +24,16 @@ typora-root-url: ./pic
 
 
 
+## 友元（friend）
+
+类内可以声明把外部X作为友元，从而实现外部函数（类）对私有类的访问
+
+
+
+
+
+
+
 ## 函数模板&类模板
 
 ```函数模板
@@ -1861,6 +1871,23 @@ void MyThread::run()
 
 
 ##捕获鼠标点击坐标
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 撤销类UndoStack
+
+包含两个，1是栈UndoStack，2是压入的UndoCommand类，通常需要重写UndoCommand类（继承QUndoCommand类），主要Imply的Command类中的函数有，undo，redo，id，mergeWith   ，push之后redo会被默认执行， redo以及merge之后会调用isObsolete判断，如果判断结果是True，当前的cmd或者merge的cmd将会被删除。
+无论什么情况cmd压入之后永远在栈顶，并且一但将cmd压入UndoStack，UndoStack拥有所有权，并且没有任何的getter能够访问这个cmd命令，因为一旦对cmd作出修改会导致整个栈结构的损坏。
 
 
 
