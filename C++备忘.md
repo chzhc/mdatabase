@@ -8,6 +8,8 @@ typora-root-url: ./pic
 
 # C++备忘
 
+[官方cpp手册](http://zh.cppreference.com/w/cpp/language)
+
 ## 事件驱动
 
 1、确定响应事件的元素
@@ -30,9 +32,58 @@ typora-root-url: ./pic
 
 
 
+## 联合体Union
 
+占用同一个空间
 
+联合体的大小仅足以保有其最大的数据成员。其他数据成员分配于该最大成员的一部分相同的字节。分配的细节是实现定义的，且从不是最近写入的联合体成员读取是未定义行为。许多编译器作为非标准语言扩展，实现读取联合体不活跃成员的能力。
 
+```c++
+union S
+{
+    std::int32_t n;     // 占用 4 字节
+    std::uint16_t s[2]; // 占用 4 字节
+    std::uint8_t c;     // 占用 1 字节
+};                      // 整个联合体占用 4 字节
+ int main()
+{
+    S s = {0x12345678}; // 初始化首个成员， s.n 现在是活跃成员
+    // 于此点，从 s.s 或 s.c 读取是未定义行为
+    std::cout << std::hex << "s.n = " << s.n << '\n';
+    s.s[0] = 0x0011; // s.s 现在是活跃成员
+    // 在此点，从 n 或 c 读取是 UB 但大多数编译器都对其定义
+    std::cout << "s.c is now " << +s.c << '\n' // 11 或 00 ，依赖平台
+              << "s.n is now " << s.n << '\n'; // 12340011 或 00115678
+}
+```
+
+若联合体的成员是类且拥有用户定义的构造函数和析构函数，为切换到该活跃成员，通常需要显式析构函数和布置 new ：
+
+```c++
+#include <iostream>
+#include <string>
+#include <vector>
+ //要切换类成员活跃状态
+union S
+{
+    std::string str;
+    std::vector<int> vec;
+    ~S() {} // 需要知道哪个成员为活跃，仅在类联合类中可行
+};          // 整个联合体占有 max(sizeof(string), sizeof(vector<int>))
+ 
+int main()
+{
+    S s = {"Hello, world"};
+    // 在此点，从 s.vec 读取是未定义行为
+    std::cout << "s.str = " << s.str << '\n';
+    s.str.~basic_string<char>();
+    new (&s.vec) std::vector<int>;
+    // 现在， s.vec 是联合体的活跃成员
+    s.vec.push_back(10);
+    std::cout << s.vec.size() << '\n';
+    s.vec.~vector<int>();
+}
+```
 
 ## 函数模板&类模板
 
@@ -341,7 +392,7 @@ void setValue(int value) { if (value != m_value) m_value = value; }
 
 ## 定时器
 
-```定时刷新
+```c++
 使用信号槽结构设置定时器定时激活时间显示槽函数
 QTimer *timer = new QTimer(this);  
 //设置timer溢出时间
@@ -382,10 +433,8 @@ void Widget::timerEvent(QTimerEvent *event){
         ui->label->setText("timer2 overflow");
     }
     else {
-        
     }
 }
-
 ```
 
  
@@ -611,6 +660,47 @@ void Dialog::mousePressEvent(QMouseEvent *event)
 
 第一，`QWidget`和`QPixmap`各有一套坐标系统，它们互不影响。可以看到，无论画布在窗口的什么位置，它的坐标原点依然在左上角，为`（0,0）`点，没有变。
 
+### 动态绘制
+
+1. 使用QPainterPath绘制路径
+
+   ```c++
+   path = new QPainterPath;  
+   path->moveTo(x,y);//初始化起点坐标  
+   path->lineTo(QPoint)
+   ```
+
+2. [重写类](https://blog.csdn.net/u012739657/article/details/22645375)
+
+
+### 渐变类gradient
+
+```c++
+// also can use Linear gradient instead
+QConicalGradient gradient;
+gradient.setCenter(drawingRect.center());
+gradient.setAngle(90);
+gradient.setColorAt(0, QColor(178, 255, 246));
+gradient.setColorAt(1, QColor(5, 44, 50));
+//apply
+QPen pen(QBrush(gradient), m_width);
+    pen.setCapStyle(Qt::RoundCap);
+    painter.setPen(pen);
+// an other example
+ QPainter painter(this);
+		auto line = QLineF(QPointF(rect().x() + 5, rect().center().y()), QPointF(rect().width() - 10, rect().center().y()));
+
+		QConicalGradient gradient;
+		gradient.setCenter(rect().center());
+		gradient.setAngle(90);
+		gradient.setColorAt(1.0, Qt::black);
+		gradient.setColorAt(0.0, palette().background().color());
+
+		auto p = QPen(gradient, 4.0);
+		painter.setPen(p);
+		painter.drawLine(line);
+```
+
 ### 涂鸦板
 
 实现画板要重写的函数有
@@ -733,60 +823,6 @@ return image;
 return image;
 }
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1826,6 +1862,176 @@ QCoreApplication :: addLibraryPath（ “C：/ customPath / plugins”）;
 
 ## 进程管理
 
+### 接口
+
+- start() 启动外部程序
+- readAllStandardError() 从标准错误中获取所有数据
+- readAllStandardOutput() 从标准输出中获取所有数据
+- write() 继承于QIODevice
+- close() 继承于QIODevice
+
+除此之外，QProcess还包含静态成员函数：
+
+- execute() 启动一个进程，然后等待该进程结束。
+- startDetached() 启动一个进程，然后使其和当前进程脱离进程的父子关系。
+
+
+### 示例
+
+#### cmd
+
+#### 启动cmd
+
+```c++
+QProcess process(this);
+process.startDetached("cmd.exe");
+```
+
+#### cmd带参数
+
+使用cmd来删除本地文件
+
+```c++
+QProcess process(this);
+process.start("cmd.exe");
+process.write ("del E:\\a.txt\n\r");
+process.write ("exit\n\r");
+process.waitForFinished();
+process.close();
+```
+
+#### cmd获取返回值
+
+使用cmd来查看网络状况
+
+```c++
+QStringList arguments;
+arguments << "/c" << "ping www.baidu.com";
+
+QProcess process(this);
+process.start("cmd.exe", arguments);
+process.waitForStarted();
+process.waitForFinished();
+QString strResult = QString::fromLocal8Bit(process.readAllStandardOutput());
+
+QMessageBox msgBox(this);
+msgBox.setText(strResult);
+msgBox.exec();
+```
+
+#### putty远程登录
+
+```c++
+QString program = "E:/Putty.exe";
+
+QStringList arguments;
+arguments<< "-pw" << "wang" << QString("%1@%2").arg("root").arg("172.18.5.73") << "22";
+
+QProcess *process = new QProcess(this);
+process->setProcessChannelMode(QProcess::SeparateChannels);
+process->setReadChannel(QProcess::StandardOutput);
+process->start(program, arguments, QIODevice::ReadWrite);
+```
+
+#### WinSCP远程文件传输
+
+```c++
+QString program = QCoreApplication::applicationDirPath() + "/WinSCP/WinSCP.exe";
+
+QStringList arguments;
+arguments << QString("%1:%2@%3:%4").arg("root").arg("wang").arg("172.18.5.73").arg(22);
+
+QProcess *process = new QProcess(this);
+process->setProcessChannelMode(QProcess::SeparateChannels);
+process->setReadChannel(QProcess::StandardOutput);
+process->start(program, arguments, QIODevice::ReadWrite);
+```
+
+### 管道
+
+一个进程的标准输出流到目标进程的标准输入。
+
+`command1 | command2`
+
+可以用下面代码实现：
+
+```
+QProcess process1;
+QProcess process2;
+
+process1.setStandardOutputProcess(&process2);
+
+process1.start("command1");
+process2.start("command2");
+```
+
+### 错误处理
+
+启动外部程序，当发生错误时，可以根据指定的错误描述所发生的错误类型。
+
+```c++
+connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(processError(QProcess::ProcessError)));
+
+void processError(QProcess::ProcessError error)
+{
+    switch(error)
+    {
+    case QProcess::FailedToStart:
+        QMessageBox::information(0, "Tip", "FailedToStart");
+        break;
+    case QProcess::Crashed:
+        QMessageBox::information(0, "Tip", "Crashed");
+        break;
+    case QProcess::Timedout:
+        QMessageBox::information(0, "Tip", "Timedout");
+        break;
+    case QProcess::WriteError:
+        QMessageBox::information(0, "Tip", "WriteError");
+        break;
+    case QProcess::ReadError:
+        QMessageBox::information(0, "Tip", "ReadError");
+        break;
+    case QProcess::UnknownError:
+        QMessageBox::information(0, "Tip", "UnknownError");
+        break;
+    default:
+        QMessageBox::information(0, "Tip", "UnknownError");
+        break;
+    }
+}
+```
+
+假设不存在对应的外部程序，则会返回错误类型`QProcess::FailedToStart`。
+
+### 参数arguments
+
+以putty远程登录为例，putty可以使用命令行`putty [-pw password] user@ip`来进行连接。
+
+所以中间为空格的地方使用arguments进行单个字符串分离：
+
+```c++
+QStringList arguments;
+arguments<< "-pw" << "wang" << QString("%1@%2").arg("root").arg("172.18.5.73");12
+```
+
+其它参数类似。
+
+```c++
+QProcess process;
+process.start("del /s *.txt");
+//等同于process.start("del", QStringList() << "/s" << "*.txt");
+```
+
+### 获取环境变量
+
+返回调用进程的环境变量作为一个键值对列表。
+
+```c++
+QStringList environment =  QProcess::systemEnvironment();
+//environment = {"PATH=/usr/bin:/usr/local/bin", "USER=greg", "HOME=/home/greg"}
+```
+
+
 ```c++
 //工程名字为myProcess
 void MainWindow::on_pushButton_clicked()
@@ -1855,9 +2061,205 @@ void MainWindow::showResult()
 设置外部进程的`readyRead`作为信号，绑定内部`showResult`函数作为槽函数
 
 ```c++
+QString str = QString::fromUtf8("xxx");
+QByteArray  = str.toUtf8();
+QByteArray = str.toLatin1();
+std::string str = QString().toUtf8().data(); 
+QString Qstr = QString::fromUtf8("D:\\你好吗？\\klfjsdl.jpg");
+或者
+QString Qstr = QString::fromUnicode("D:\你好吗？\klfjsdl.jpg");
+```
+
+```c++
+void Qt_test::ReadOut()     
+{       
+     QProcess *processInfo = dynamic_cast< QProcess* >( sender() );
+
+   if( processInfo )
+     {
+       ui->upgrade_info->append( processInfo->readAllStandardOutput() );
+     }        
+ }    
+```
+
+## QT QString方法 
+
+```c++
+  QString str1,str2;
+//====================================================================
+//拼接
+//后拼接
+  str1.append(str2);//把str2加到str1后面
+//前拼接
+  str1.prepend(str2);//把str2加到str1前面
+//从中间插入
+  QString str = "Meal";
+  str.insert(1, QString("ontr"));// str == "Montreal"
+//====================================================================
+//截取
+//左截取
+  QString x = "Pineapple";
+  QString y = x.left(4);      // y == "Pine"
+//右截取
+  QString x = "Pineapple";
+  QString y=x.right(5);       //y==apple
+//从中间截取
+  str1.mid(1,2)//从索引1开始，截取两个字符
+//===================================================================
+//截取或填充  
+  QString s = "apple";
+  QString t = s.leftJustified(8, '.');    // t == "apple..."
+//====================================================================
+//删除
+//尾删
+  QString str("LOGOUT\r\n");//从尾部删除n个字符，返回剩余字符
+  str.chop(2);// str == "LOGOUT"
+//头删
+  QString str("LOGOUT\r\n");//从尾部删除n个字符，返回剩余字符
+  str.right(2);// str == "GOUT\r\n"
+//从中间删
+  QString s = "Montreal";
+  s.remove(1, 4);    // s == "Meal"  
+//===================================================================  
+//清空
+  QString s = "apple";
+  s.clear();            //s==""
+//===================================================================  
+//填充
+  QString str = "Berlin";
+  str.fill('z');        // str == "zzzzzz"
+  str.fill('A', 2);// str == "AA"
+//===================================================================  
+//替换
+  QString x = "Say yes!";
+  QString y = "no";
+  x.replace(4, 3, y);    // x == "Say no!"
+//===================================================================  
+//重复
+  QString str("ab");
+  str.repeated(4);            // returns "abababab"
+//===================================================================  
+//字符数
+  int nToalLenth = string.size();
+//===================================================================  
+//索引值
+  int nIndex = string.indexOf("****");
+//===================================================================  
+//以指定字符串为分割符，进行分割
+//返回一个或多个分割后的值
+  QString str;
+  QString csv = "forename,middlename,surname,phone";
+  QString path = "/usr/local/bin/myapp"; // First field is empty
+  QString::SectionFlag flag = QString::SectionSkipEmpty;
+
+  str = csv.section(',', 2, 2);   // str == "surname"
+  str = path.section('/', 3, 4);  // str == "bin/myapp"
+  str = path.section('/', 3, 3, flag); // str == "myapp" 
+  //如果索引值是负数，则从右到左取值
+  str = csv.section(',', -3, -2);  // str == "middlename,surname"
+  str = path.section('/', -1); // str == "myapp" 
+//返回QStringList
+  QString str = "a,,b,c";
+  QStringList list1 = str.split(',');
+  // list1: [ "a", "", "b", "c" ]
+  QStringList list2 = str.split(',', QString::SkipEmptyParts);
+  // list2: [ "a", "b", "c" ]
+  //运用split 将字符竖向排列
+  QString strText = QStringLiteral("一去二三里，烟村四五家。");
+   pLabel->setText(strText.split("",          QString::SkipEmptyParts).join("\n"));
+   pLabel->setAlignment(Qt::AlignCenter);
+//===================================================================  
+//去除全部witeSpace符号：'\t', '\n', '\v', '\f', '\r', and ' '.
+  QString str = "  lots\t of\nwhitespace\r\n ";
+  str = str.simplified();    // str == "lots of whitespace";
+//去除首尾whiteSpace符号
+  QString str = "  lots\t of\nwhitespace\r\n ";
+  str = str.trimmed();      // str == "lots\t of\nwhitespace"  
+
+```
+
+```c++
 //保证中文编码可读
 QTextCodec::setCodecForCStrings(QTextCodec::codecForLocale());
 ```
+
+## QTextStream IO 
+文件操作要求强制指定打开方式,file.open()
+
+使用QTextStream向txt文件输出换行时，需要使用QIODevice::Text标志。
+官方文档对QIODevice::Text的解释：
+When reading, the end-of-line terminators are translated to '\n'. When writing, the end-of-line terminators are translated to the local encoding, for example '\r\n' for Win32.
+简而言之，该标志指示在读写过程中要对end-of-line进行转换。
+
+```c++
+    QFile file("output.txt");
+    file.open(QIODevice::Text | QIODevice::WriteOnly);
+    QTextStream out(&file);
+    out<<"esdasdasd";
+    out<<"i"<<endl<<"fsck"<<endl<<"the"<<"faidu"<<endl;
+```
+
+
+
+**例子**：
+
+（1）不使用QIODevice::Text
+
+1. ```
+   1. \#include <QCoreApplication>  
+   2. \#include <QFile>  
+   3. \#include <QTextStream>  
+   4.   
+   5. int main(int argc, char *argv[])  
+   6. {  
+   7.     QCoreApplication a(argc, argv);  
+   8.     QFile file("C:/Users/Administrator/Desktop/1.txt");  
+   9.     if (file.open(QIODevice::WriteOnly))  
+   10.     {  
+   11.         QTextStream out(&file);  
+   12.         out << endl << '*';  
+   13.     }  
+   14.     return a.exec();  
+   15. }  
+   ```
+
+   ​
+
+输出：
+
+![img](https://img-blog.csdn.net/20140218215353828?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvdTAxMjY4OTU4OA==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+
+可见输出换行达不到效果。
+
+（2）使用QIODevice::Text
+
+1. ```c++
+   1. \#include <QCoreApplication>  
+   2. \#include <QFile>  
+   3. \#include <QTextStream>  
+   4.   
+   5. int main(int argc, char *argv[])  
+   6. {  
+   7.     QCoreApplication a(argc, argv);  
+   8.     QFile file("C:/Users/Administrator/Desktop/1.txt");  
+   9.     if (file.open(QIODevice::Text | QIODevice::WriteOnly))  
+   10.     {  
+   11.         QTextStream out(&file);  
+   12.         out << endl << '*';  
+   13.     }  
+   14.     return a.exec();  
+   15. }  
+   ```
+
+   ​
+
+效果：
+
+![img](https://img-blog.csdn.net/20140218215819734?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvdTAxMjY4OTU4OA==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+
+
+
+
 
 ## 定时
 
@@ -2065,6 +2467,96 @@ sender->writeDatagram(datagram.data(), datagram.size(),serverAddress, 6665);
 qint64 writeDatagram(const char *data,qint64 size,const QHostAddress &address,quint16 port)
 qint64 writeDatagram(const QByteArray &datagram,const QHostAddress &host,quint16 port)
 */
+
+///
+
+void MainWindow::sendMessage(MessageType type, QString serverAddress)
+{
+    QByteArray data;
+    QDataStream out(&data,QIODevice::WriteOnly);//将二进制数据存入到io设备
+    QString localHostName=QHostInfo::localHostName();//返回主机名
+    QString address=getIp();//得到主机的ip地址
+    out<< type << getUserName() << localHostName;
+    qDebug() << type;
+    switch (type)
+    {
+    case Message:
+        if(ui->textEdit->toPlainText()=="")
+        {
+            QMessageBox::warning(0,tr("infomation"),tr("fasong xinxi buneng weikong"));
+        }
+        out << address << getMessage();//将ip地址和得到的消息内容输入out数据流
+        break;
+    case NewParticipant:
+        out << address;
+        break;
+    case ParticipantLeft :
+           break;
+       case FileName :
+           break;
+       case Refuse :
+           break;
+    }
+    udpSocket->(data,data.length(),QHostAddress::Broadcast, port);//QHostAddress::Broadcast是指发送数据的目的地址
+
+//得到主机的ip地址
+QString MainWindow::getIp()
+{
+ /使用allAddresses命令获得所有的ip地址
+    QList<QHostAddress> list=QNetworkInterface::allAddresses();
+    foreach (QHostAddress address,list)
+    {
+        if(address.protocol()==QAbstractSocket::IPv4Protocol)
+            return address.toString();
+    }
+    return 0;
+}
+//接受udp消息
+void MainWindow::processPendingDatagrams()
+{
+while(udpSocket->hasPendingDatagrams())
+    {
+       QByteArray datagram;
+       datagram.resize(udpSocket->pendingDatagramSize());
+       udpSocket->readDatagram(datagram.data(),datagram.size());//接收一个数据报，并将其存储在data中。返回的是数据报的长度
+       //将读取到的不大于datagram.size()大小数据输入到datagram.data()中，datagram.data()返回的是一个字节数组中存储
+    
+    	//从in中顺序流出内容
+       //数据位置的指针
+       QDataStream in(&datagram,QIODevice::ReadOnly);
+       int messageType;
+       in >> messageType;
+
+	   QString userName,localHostName,ipAddress,message;
+       QString time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");//将当前的时间转化到括号中的形式
+       switch(messageType)
+              {
+              case Message:
+                  //in>>后面如果为Qstring，则表示读取一个直到出现'\0'的字符串
+                  in >> userName >> localHostName >> ipAddress >> message;
+                  ui->textBrowser->setTextColor(Qt::blue);//设置文本颜色为蓝色
+                  ui->textBrowser->setCurrentFont(QFont("Times New Roman",12));//设置字体大小为12号字体
+              //  ui->messageBrowser->append("[ " +userName+" ] "+ time);//输出的格式为用户名加时间显示
+                  ui->textBrowser->append("[ " +localHostName+" ] "+ time);
+                  ui->textBrowser->append(message);//消息输出
+                  break;
+              case NewParticipant:
+                  in >>userName >>localHostName >>ipAddress;
+                  newParticipant(userName,localHostName,ipAddress);
+                  break;
+              case ParticipantLeft:
+                  in >>userName >>localHostName;
+                  participantLeft(userName,localHostName,time);
+                  break;
+              case FileName:
+                  break;
+              case Refuse:
+                  break;
+              }
+    }
+}
+
+
 ```
 
 
@@ -2160,13 +2652,23 @@ animation->start();
 
 
 
+```c++
+
+
+```
 
 
 
 
 
 
+### QString
+Qt中, 很多函数都需要使用QString类型, double类转换QString类型, 使用QString::number()函数;
 
+第一个参数为: 需要转换的double数据;第二个参数为: 基数, 10, 2, 8等; 第三个参数为精度;
+```c++
+pornPropLabel->setText(QString::number(intResult, 10, 4));  
+```
 
 
 
@@ -2317,6 +2819,13 @@ In Linux/X11 platforms, Qt provides support for session management. Sessions all
    * ​
 3. 地图？
 4. 目标
+
+
+dcdcdc
+
+fefefe
+
+000000
 
 
 
