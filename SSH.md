@@ -10,8 +10,6 @@ SSH 密钥对可以让您方便的登录到 SSH 服务器，而无需输入密�
 
 ## Contents
 
- [[hide]()] 
-
 - [1背景](https://wiki.archlinux.org/index.php/SSH_keys_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)#.E8.83.8C.E6.99.AF)
 - 2生成密钥对
   - [2.1选择合适的加密方式](https://wiki.archlinux.org/index.php/SSH_keys_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)#.E9.80.89.E6.8B.A9.E5.90.88.E9.80.82.E7.9A.84.E5.8A.A0.E5.AF.86.E6.96.B9.E5.BC.8F)

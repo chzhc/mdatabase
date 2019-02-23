@@ -7,14 +7,6 @@
 neo4j is a high performance **node-based graph** database
 
 
-
-
-
-
-
-
-
-
 ## install
 
 in order to install the neo4j
