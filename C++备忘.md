@@ -452,6 +452,225 @@ toupper('c');
 
 
 
+## 位运算骚操作
+
+```c++
+*str = *str | ('a'-'A'); //大写字符转小写 A=64+1 Z=64+25
+```
+
+
+
+
+
+```c++
+*str = *str | ('a'-'A'); //大写字符转小写
+```
+
+
+
+
+
+
+
+
+
+
+
+## 骚操作
+
+* 创建一维数组代替二维，使用宏定义#define X(x) x/num 确定行号
+* 
+
+```c++
+name.erase(remove(name.begin(),name.end(),'.'),name.end());
+```
+
+* 奇偶分块，双指针，一个从前向后，一个从后向前。
+* 
+
+```c++
+    map<char,int> m;
+    int dx[4]={0,0,1,-1};
+    int dy[4]={1,-1,0,0};
+    bool judgeCircle(string moves) {
+        m['R']=2;
+        m['L']=3;
+        m['U']=0;
+        m['D']=1;
+        int x=0,y=0;
+        for (char a:moves){
+            x+=dx[m[a]];
+            y+=dy[m[a]];
+        }
+        if (x==0&&y==0)
+            return true;
+        return false;
+    }
+```
+
+* str.erase(remove(str.begin(),str.end(),'a'),str.end());
+
+
+
+
+
+#### LeetCode 977
+
+给定一个按非递减顺序排序的整数数组 `A`，返回每个数字的平方组成的新数组，要求也按非递减顺序排序。
+
+**示例 1：**
+
+```
+输入：[-4,-1,0,3,10]
+输出：[0,1,9,16,100]
+```
+
+双指针从外向内
+
+#### LeetCode 929
+
+每封电子邮件都由一个本地名称和一个域名组成，以 @ 符号分隔。
+
+例如，在 `alice@leetcode.com`中， `alice` 是本地名称，而 `leetcode.com` 是域名。
+
+除了小写字母，这些电子邮件还可能包含 `'.'` 或 `'+'`。
+
+如果在电子邮件地址的**本地名称**部分中的某些字符之间添加句点（`'.'`），则发往那里的邮件将会转发到本地名称中没有点的同一地址。例如，`"alice.z@leetcode.com”` 和 `“alicez@leetcode.com”` 会转发到同一电子邮件地址。 （请注意，此规则不适用于域名。）
+
+如果在**本地名称**中添加加号（`'+'`），则会忽略第一个加号后面的所有内容。这允许过滤某些电子邮件，例如 `m.y+name@email.com` 将转发到 `my@email.com`。 （同样，此规则不适用于域名。）
+
+可以同时使用这两个规则。
+
+给定电子邮件列表 `emails`，我们会向列表中的每个地址发送一封电子邮件。实际收到邮件的不同地址有多少？
+
+```c++
+class Solution {
+public:
+    int numUniqueEmails(vector<string>& emails) {
+        int res,j;
+        string name,domain,temp;
+        int len = emails.size();
+        set<string> m;
+        for (int i=0;i<len;i++){
+            temp=emails[i];
+            name=temp.substr(0,temp.find('@'));
+            name = name.substr(0,name.find('+'));
+            name.erase(remove(name.begin(),name.end(),'.'),name.end());
+            domain=temp.substr(temp.find('@')+1);
+            m.insert(name+"@"+domain);
+        }
+        return m.size();
+    }
+};
+```
+
+#### LeetCode #6 Z字变换
+
+将一个给定字符串根据给定的行数，以从上往下、从左到右进行 Z 字形排列。
+
+比如输入字符串为 `"LEETCODEISHIRING"` 行数为 3 时，排列如下：
+
+```
+L   C   I   R
+E T O E S I I G
+E   D   H   N
+```
+
+之后，你的输出需要从左往右逐行读取，产生出一个新的字符串，比如：`"LCIRETOESIIGEDHN"`。
+
+请你实现这个将字符串进行指定行数变换的函数：
+
+```
+string convert(string s, int numRows);
+```
+
+#### LeetCode #8 字符串转整数
+
+需要综合考虑所有可能情况
+
+int最大值 `0x7fffffff`
+
+int最小值`0x80000000`
+
+
+
+#### LeetCode #5 最长回文子串
+
+#### 动态规划
+
+为了改进暴力法，我们首先观察如何避免在验证回文时进行不必要的重复计算。考虑 
+$$
+\textrm{“ababa”}
+$$
+ 这个示例。如果我们已经知道 
+$$
+\textrm{“bab”}
+$$
+是回文，那么很明显，
+$$
+\textrm{“ababa”}
+$$
+ 一定是回文，因为它的左首字母和右尾字母是相同的。
+
+我们给出 P(i,j)*P*(*i*,*j*) 的定义如下：
+$$
+P(i,j) = \begin{cases} \text{true,} &\quad\text{如果子串} S_i \dots S_j \text{是回文子串}\\ \text{false,} &\quad\text{其它情况} \end{cases}
+$$
+因此，
+$$
+P(i, j) = ( P(i+1, j-1) \text{ and } S_i == S_j )
+$$
+基本示例如下：
+$$
+P(i, i) = true
+$$
+
+$$
+P(i, i+1) = ( S_i == S_{i+1} )
+$$
+
+这产生了一个直观的动态规划解法，我们首先初始化一字母和二字母的回文，然后找到所有三字母回文，并依此类推…
+
+**复杂度分析**
+
+- 时间复杂度：O(n^2)*O*(*n*2)， 这里给出我们的运行时间复杂度为 O(n^2)*O*(*n*2) 。
+- 空间复杂度：O(n^2)*O*(*n*2)， 该方法使用 O(n^2)*O*(*n*2) 的空间来存储表。
+
+> C++，选取2n-1个中心，然后扩展的方法。
+
+```c++
+class Solution {
+public:
+    string longestPalindrome(string s) {
+        if (s.length()<= 1) return s;
+        int lenMax= 0, left= 0;
+        for (int i= 0; i< s.length(); i++) {
+            int len1= expand(s, i, i);
+            int len2= expand(s, i, i+ 1);
+            int len= (len1> len2)?len1:len2;
+            if (len> lenMax) {
+                lenMax= len;
+                left= i- (lenMax- 1)/ 2;
+            }
+        }
+        return s.substr(left, lenMax);
+    }
+    
+    int expand(string &s, int left, int right) {
+        int l= left, r= right;
+        while (l>= 0 && r< s.length() && s[l]== s[r]) {
+            --l;
+            ++r;
+        }
+        return r- l- 1;
+    }
+};
+```
+
+
+
+
+
 # Tips
 
 ### 连续赋值原理
