@@ -939,6 +939,38 @@ public:
 
 
 
+#### 最大数
+
+给定一组非负整数，重新排列它们的顺序使之组成一个最大的整数。
+
+**示例 1:**
+
+```
+输入: [10,2]
+输出: 210
+```
+
+**示例 2:**
+
+```
+输入: [3,30,34,5,9]
+输出: 9534330
+```
+
+**说明:** 输出结果可能非常大，所以你需要返回一个字符串而不是整数。
+
+**需要将问题简化为一个字符串比较的逻辑问题，需要注意例如“30”和“3”的顺序 由`330`或者`303`决定。**
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Tips
@@ -995,21 +1027,46 @@ void printAll(vector<T> t){
 }
 ```
 
-## algorithem库
+## algorithm库
+
+头文件：`#include <algorithm>`
+
+时间复杂度：一次查询O(log n)，n为数组长度。
+
+![img](/../assets/20180605171241611)
+
+### **lower_bound**
+
+功能：查找非递减序列[first,last) 内第一个大于或等于某个元素的位置。
+
+返回值：如果找到返回找到元素的地址否则返回last的地址。（这样不注意的话会越界，小心）
+
+用法：`int t=lower_bound(a+l,a+r,key)-a；`(a是数组)。
+
+### **upper_bound**
+
+功能：查找非递减序列[first,last) 内第一个大于某个元素的位置。
+
+返回值：如果找到返回找到元素的地址否则返回last的地址。（同样这样不注意的话会越界，小心）
+
+用法：`int t=upper_bound(a+l,a+r,key)-a；`(a是数组)。
 
 ### sort
 
-
-
-
-
-
-
-
+```c++
+sort(a.begin(),a.end(),[](int a,int b){return a>b;}) ;
+//equal to greater<int> *ref <functional>
+```
 
 
 
 ### reverse
+
+```c++
+sort(a.begin(),a.end()) //reverse the array;
+```
+
+
 
 
 
