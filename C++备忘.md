@@ -375,7 +375,7 @@ s.rfind();//返回-1
 
 ## 字符串处理
 
-### string转int的方式
+### String转Int的方式
 
 1. 采用最原始的string, 然后按照十进制的特点进行算术运算得到int，但是这种方式太麻烦，这里不介绍了。
 
@@ -388,7 +388,15 @@ s.rfind();//返回-1
 
    `istringstream is("12"); //构造输入字符串流，流的内容初始化为“12”的字符串 int i; is >> i; //从is流中读入一个int整数存入i中`
 
-### int转string的方式
+```c++
+istringstream is("12"); //构造输入字符串流，流的内容初始化为“12”的字符串   
+int i;   
+is >> i; //从is流中读入一个int整数存入i中  
+```
+
+
+
+### Int转String的方式
 
 1. 采用标准库中的to_string函数。**string 类型 to_string**
 
@@ -407,8 +415,13 @@ s.rfind();//返回-1
    //10 ————转换基数
    ```
 
-
-
+   ```c++
+   int aa = 30;
+   stringstream ss;
+   ss<<aa; 
+   string s1 = ss.str();
+   cout<<s1<<endl; // 30
+   ```
 
 vector的几种初始化及赋值方式：
 （1）不带参数的构造函数初始化
