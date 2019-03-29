@@ -219,10 +219,10 @@ def cost(X, y, W):
 ```python
 def gradient(X, y, theta):
     grad = np.zeros(theta.shape) # 有几个theta就有几个梯度
-    error = (model(X, theta)- y).ravel()
-    for j in range(len(theta.ravel())): #for each parmeter
-        term = np.multiply(error, X[:,j])
-        grad[0, j] = np.sum(term) / len(X)
+    error = (model(X, theta)- y).ravel() #revel 将n维展成一维
+    for j in range(len(theta.ravel())): # for each parmeter
+        term = np.multiply(error, X[:,j]) # 将对应的输入乘以输出
+        grad[0, j] = np.sum(term) / len(X) # 梯度除以n
     
     return grad
 ```

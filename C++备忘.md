@@ -780,9 +780,291 @@ string convert(string s, int numRows);
 
 
 
+#### [915. 分割数组](https://leetcode-cn.com/problems/partition-array-into-disjoint-intervals/)
+
+```c++
+*输入：[5,0,3,8,6]
+输出：3
+解释：left = [5,0,3]，right = [8,6]
+*输入：[1,1,1,0,6,2]
+输出：4
+解释：left = [1,1,1,0]，right = [6,12]
+
+/* 
+1、保存分割点左右的最大值以及位置，4个stack做，左边2个stack，一个保存序列，一个保存最大值
+*/
+int partitionDisjoint(vector<int>& A) {
+        if (A.size()==0)
+            return 0;
+        int l=0,r=A.size()-1;
+        stack<int> sl,sr;
+        stack<int> slm,srm;
+        for (int i=A.size()-1;i>0;i--){
+            sr.push(A[i]);
+            if (srm.size()==0||srm.top()>=A[i]){
+                srm.push(A[i]);
+            }
+        }
+        sl.push(A[0]);
+        slm.push(A[0]);
+        while (sr.size()&&slm.top()>srm.top()){
+            sl.push(sr.top());
+            if (sr.top()>slm.top())
+                slm.push(sr.top());
+            if (sr.top()==srm.top())
+                srm.pop();
+            sr.pop();
+        }
+        return sl.size();
+    }
+```
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 水塘抽样
+
+#### [382. 链表随机节点](https://leetcode-cn.com/problems/linked-list-random-node/)
+
+```c++
+// 初始化一个单链表 [1,2,3].
+ListNode head = new ListNode(1);
+head.next = new ListNode(2);
+head.next.next = new ListNode(3);
+Solution solution = new Solution(head);
+
+// getRandom()方法应随机返回1,2,3中的一个，保证每个元素被返回的概率相等。
+solution.getRandom();
+int getRandom() {
+        // // srand(time(NULL));
+        // ListNode *p;
+        // int ind=rand()%len;
+        // if (ind>mid){
+        //     p=pmid;
+        //     ind-=mid;
+        // }
+        // else {
+        //     p=head;
+        // }
+        // while(ind-->0){
+        //     p=p->next;
+        // }
+        // return p->val;
+        ListNode *p;
+        p=head;
+        bool shoot=false;
+        int res=0,llen=len;
+        while(1){
+            int ind=rand()%llen;
+            if (ind==0){
+                return p->val;
+            }
+            p=p->next;
+            llen--;
+        }
+    }
+/** 水塘抽样 ——正序：抽到就返回，逆序：直到结束为止
+取中第一个元素概率 1 / length，未取中第一个元素概率（length - 1）/ length
+遍历到第二个元素的前提是未取中第一个元素，已经有了（length - 1）/ length这个前提
+所以遍历时第二个元素取中概率需要是 1 /（length - 1），这样乘以前提（length - 1）/ length才能得到实际概率 1 / length
+**/
+```
+
+#### [398. 随机数索引](https://leetcode-cn.com/problems/random-pick-index/)
+
+```c++
+int[] nums = new int[] {1,2,3,3,3};
+Solution solution = new Solution(nums);
+
+// pick(3) 应该返回索引 2,3 或者 4。每个索引的返回概率应该相等。
+solution.pick(3);
+
+// pick(1) 应该返回 0。因为只有nums[0]等于1。
+solution.pick(1);
+
+/***
+倒序的水塘抽样，要是遇到这个元素，就首先反顺序1/1放入候选，然后遇到第二个的时候用1/2的概率替换，第三个1/3的概率……
+**/
+vector<int> n;
+Solution(vector<int> nums) {
+    n=nums;
+}
+int pick(int target) {
+    int count=0;
+    int shot;
+    int index=-1;
+    for (int i=0;i<n.size();i++){
+        int nn=n[i];
+        if (nn==target)
+        {
+            count++;
+            shot=rand()%count;
+            if (shot==0)
+                index=i;
+        }
+    }
+    return index;
+}
+```
+
+
+
+
+
+
+
+#### 557. 反转字符串中的单词 III
+
+```
+输入: "Let's take LeetCode contest"
+输出: "s'teL ekat edoCteeL tsetnoc" 
+```
+
+```c++
+//采用字符流 将字符自动切分“ ”
+string reverseWords(string s) {
+        istringstream sin(s);
+        string res = "";
+        string t;
+        sin >> t;
+        reverse(t.begin(),t.end());
+        res+=t;
+        while(sin >> t)
+        {
+            res+=" ";
+            reverse(t.begin(),t.end());
+            res+=t;
+        }
+        return res;
+    }
+```
+
+#### 434. 字符串中的单词数
+
+```
+输入: "Hello, my name is John"
+输出: 5
+```
+
+```c++
+    // int countSegments(string s) {
+    //     istringstream is(s);
+    //     int count=0;
+    //     string tmp;
+    //     while (is>>tmp){
+    //         count++;
+    //     }
+    //     return count;
+    // }
+    int countSegments(string s){
+        int count=0;
+        int i=0;
+        int len=s.size();
+        while (i<len){
+ while(i<len&&isspace(s[i]))i++;
+            if (i==len) break;
+                count++;
+            while (i<len&&!isspace(s[i]))i++;
+        }
+        return count;
+    }
+```
+
+
+
+
+
+#### [278. 第一个错误的版本](https://leetcode-cn.com/problems/first-bad-version/)
+
+```
+给定 n = 5，并且 version = 4 是第一个错误的版本。
+
+调用 isBadVersion(3) -> false
+调用 isBadVersion(5) -> true
+调用 isBadVersion(4) -> true
+
+所以，4 是第一个错误的版本。 
+
+    int firstBadVersion(int n) {
+        ulong low=0,mid,high=n;
+        while (low<high){
+            mid=(low+high)/2;
+            if (isBadVersion(mid)==true)
+                high=mid;
+            else low=mid+1;
+        }
+        return low;
+    }
+```
+
+
+
+#### [233. 数字1的个数](https://leetcode-cn.com/problems/number-of-digit-one/)
+
+给定一个整数 n，计算所有小于等于 n 的非负整数中数字 1 出现的个数。
+
+**示例:**
+
+```
+输入: 13
+输出: 6 
+解释: 数字 1 出现在以下数字中: 1, 10, 11, 12, 13 。
+```
+
+```c++
+int countDigitOne(int n) {
+        // string s;
+        // for (int i=1;i<=n;i++){
+        //     s+=to_string(i);
+        // }
+        // int cnt=0;
+        // for (auto ss:s){
+        //     if (ss=='1')
+        //         cnt++;
+        // }
+        // return cnt;
+        unsigned long long num=n,i=1,s=0;
+        if(num==-1)
+            return 0;
+
+        while(num)              //分别计算个、十、百......千位上1出现的次数，再求和。
+        { 
+            if(num%10==0)
+                s=s+(num/10)*i;
+
+            if(num%10==1) 
+                s=s+(num/10)*i+(n%i)+1;
+
+            if(num%10>1) 
+                s=s+ceil(num/10.0)*i;
+
+            num=num/10;
+            i=i*10;
+        }    
+        return s;
+    }
+```
 
 
 
@@ -1081,5 +1363,15 @@ sort(a.begin(),a.end()) //reverse the array;
 
 
 
+### isspace
 
+
+
+
+
+### isalpha
+
+
+
+### isalnum
 
