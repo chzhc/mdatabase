@@ -780,6 +780,185 @@ string convert(string s, int numRows);
 
 
 
+#### [49. 字母异位词分组](https://leetcode-cn.com/problems/group-anagrams/)
+
+```c++
+输入: ["eat", "tea", "tan", "ate", "nat", "bat"],
+输出:
+[
+  ["ate","eat","tea"],
+  ["nat","tan"],
+  ["bat"]
+]
+
+/*
+1、质数相乘保证唯一性（字符太长导致longlong溢出）
+2、使用字符串hash，将string sort之后作为key排序，value是一个vector列表
+使用map[ordered_str].push_back(str) 插入
+*/
+vector<vector<string>> groupAnagrams(vector<string>& strs) {
+        map<string, vector<string>> mm;
+        vector<vector<string>> res;
+        // int m[26]={0};
+        // int curr=2;
+        // calc primer
+        // for (int i=0;i<26;i++){
+        //     for(int ii=curr;;ii++){
+        //         bool is=true;
+        //         for (int j=2;j<=ii/2;j++){
+        //             if (ii%j==0)is=false;
+        //         }
+        //         if (is){
+        //             curr=ii;
+        //             break;
+        //         }
+        //     }
+        //     m[i]=curr++;
+        // }
+        // vector <long long> lonSum;
+        //
+        for (auto s:strs){
+            // long long sum=1;
+            string ss=s;
+            sort(ss.begin(),ss.end());
+            mm[ss].push_back(s);
+        }
+        //
+        for(auto it=mm.begin();it!=mm.end();it++){
+            res.push_back(it->second);
+        }
+        return res;
+    }
+```
+
+#### [957. N 天后的牢房](https://leetcode-cn.com/problems/prison-cells-after-n-days/)
+
+```c++
+输入：cells = [0,1,0,1,1,0,0,1], N = 7
+输出：[0,0,1,1,0,0,0,0]
+解释：
+下表概述了监狱每天的状况：
+Day 0: [0, 1, 0, 1, 1, 0, 0, 1]
+Day 1: [0, 1, 1, 0, 0, 0, 0, 0]
+Day 2: [0, 0, 0, 0, 1, 1, 1, 0]
+Day 3: [0, 1, 1, 0, 0, 1, 0, 0]
+Day 4: [0, 0, 0, 0, 0, 1, 0, 0]
+Day 5: [0, 1, 1, 1, 0, 1, 0, 0]
+Day 6: [0, 0, 1, 0, 1, 1, 0, 0]
+Day 7: [0, 0, 1, 1, 0, 0, 0, 0]
+/*
+1、按照规则做
+2、位操作~(n<<1 ^ n>>1) 左右同或
+*/
+    vector<int> prisonAfterNDays(vector<int>& cells, int N) {
+		unsigned char bcell=0;
+        for (int i=0;i<8;i++){
+            if (cells[i]==1){
+                bcell=bcell|1<<i;
+            }
+        }
+        vector<unsigned char> vec;
+        bcell=(~((bcell>>1)^(bcell<<1)))&126;
+        vec.push_back(bcell);
+        while(1){
+            bcell=(~((bcell>>1)^(bcell<<1)))&126;
+            if (vec[0]==bcell){
+                 break;
+            }
+            vec.push_back(bcell);
+        }
+       
+        vector<int> ret(8,0);
+        for (int i = 0; i < 8; ++i)
+        {
+            unsigned char c=vec[(N-1)%vec.size()];
+          if (c & (1 << i))
+            ret[i] = 1;
+        }
+        return ret;
+    }
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### [705. 设计哈希集合](https://leetcode-cn.com/problems/design-hashset/)
+
+```c++
+MyHashSet hashSet = new MyHashSet();
+hashSet.add(1);         
+hashSet.add(2);         
+hashSet.contains(1);    // 返回 true
+hashSet.contains(3);    // 返回 false (未找到)
+hashSet.add(2);          
+hashSet.contains(2);    // 返回 true
+hashSet.remove(2);          
+hashSet.contains(2);    // 返回  false (已经被删除)
+/*
+所有的值都在 [1, 1000000]的范围内。
+操作的总数目在[1, 10000]范围内。
+不要使用内建的哈希集合库。
+1、使用1000000个桶，通过key值作为寻址
+2、Hash开，桶散列，
+*/
+
+```
+
+#### [7. 整数反转](https://leetcode-cn.com/problems/reverse-integer/)
+
+```c++
+输入: 123
+输出: 321
+输入: -123
+输出: -321
+//假设我们的环境只能存储得下 32 位的有符号整数，则其数值范围为 [−231,  231 − 1]。请根据这个假设，如果反转后整数溢出那么就返回 0。
+    // 使用字符串流，同时采用long long 避免溢出
+    int reverse(int x) {
+        string s;
+        stringstream ss;
+        if (x > 0) {
+            while (x) {
+                s += '0' + x % 10;
+                x /= 10;
+            }
+        }
+        else {
+            s += "-";
+            while (x) {
+                s += '0'+ abs(x % 10);
+                x /= 10;
+            }
+        }
+        ss << s;
+        long long a;
+        ss >> a;
+        if (a > 0x7fffffff || a < (int)0x80000000)
+            return 0;
+        return a;
+    }
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 #### [915. 分割数组](https://leetcode-cn.com/problems/partition-array-into-disjoint-intervals/)
 
 ```c++
@@ -823,6 +1002,200 @@ int partitionDisjoint(vector<int>& A) {
 
 
 
+#### [645. 错误的集合](https://leetcode-cn.com/problems/set-mismatch/)
+
+集合 `S` 包含从1到 `n` 的整数。不幸的是，因为数据错误，导致集合里面某一个元素复制了成了集合里面的另外一个元素的值，导致集合丢失了一个整数并且有一个元素重复。
+
+给定一个数组 `nums` 代表了集合 `S` 发生错误后的结果。你的任务是首先寻找到重复出现的整数，再找到丢失的整数，将它们以数组的形式返回。
+
+**示例 1:**
+
+```c++
+输入: nums = [1,2,2,4]
+输出: [2,3]
+// 分桶hash
+vector<int> findErrorNums(vector<int>& nums) {
+        int m[100001] = { 0 };
+        int len = nums.size();
+        for (auto n : nums) {
+            m[n]++;
+        }
+
+        int a1, a2;
+        for (int i = 1; i <= len; i++) {
+            if (m[i] == 0)
+                a2 = i;
+            else if (m[i] == 2)
+                a1 = i;
+        }
+
+        vector <int> res = { a1,a2 };
+        return res;
+    }
+```
+
+
+
+
+
+
+
+
+
+#### [762. 二进制表示中质数个计算置位](https://leetcode-cn.com/problems/prime-number-of-set-bits-in-binary-representation/)
+
+给定两个整数 `L` 和 `R` ，找到闭区间 `[L, R]` 范围内，计算置位位数为质数的整数个数。
+
+（注意，计算置位代表二进制表示中1的个数。例如 `21` 的二进制表示 `10101` 有 3 个计算置位。还有，1 不是质数。）
+
+**注意:**
+
+1. `L, R` 是 `L <= R` 且在 `[1, 10^6]` 中的整数。
+2. `R - L` 的最大值为 10000。
+
+**示例 1:**
+
+```c++
+输入: L = 6, R = 10
+输出: 4
+解释:
+6 -> 110 (2 个计算置位，2 是质数)
+7 -> 111 (3 个计算置位，3 是质数)
+9 -> 1001 (2 个计算置位，2 是质数)
+10-> 1010 (2 个计算置位，2 是质数)
+    // 解题思路 按照最多的bit位置，建立hash，然后根据setBit数量查找是否质数。
+    //int zhishu[] = {2,3,5,7,11,13,17,19};       //10的6次方 对应2的20次方 所以不用统计太多质数
+    int countPrimeSetBits(int L, int R) {
+        map<int ,bool> m;
+        bool flag=true;
+        int temp=R,count=0;
+        while(temp){
+            count++;
+            temp/=2;
+        }
+        for (int i=2;i<count;i++){
+            flag=1;
+            for (int j=2;j<=i/2;j++){
+                if (i%j==0)
+                {
+                    flag=0;break;
+                }
+            }
+            if (flag)
+                m[i]=1;
+        }
+        int countAll=0;
+        for (int i=L;i<=R;i++){
+            int setBit=0;
+            int ttemp=i;
+            while (ttemp){
+                if (ttemp&1)
+                    setBit++;
+                ttemp>>=1;
+            }
+            if (m[setBit]==1)
+                countAll++;
+        }
+        return countAll;
+    }
+```
+
+### 动态规划
+
+#### [397. 整数替换](https://leetcode-cn.com/problems/integer-replacement/)
+
+给定一个正整数 *n*，你可以做如下操作：
+
+\1. 如果 *n* 是偶数，则用 `n / 2`替换 *n*。
+\2. 如果 *n* 是奇数，则可以用 `n + 1`或`n - 1`替换 *n*。
+*n* 变为 1 所需的最小替换次数是多少？
+
+**示例 1:**
+
+```c++
+输入:
+8
+输出:
+3
+解释:
+8 -> 4 -> 2 -> 1
+输入:
+7
+输出:
+4
+解释:
+7 -> 8 -> 4 -> 2 -> 1
+或
+7 -> 6 -> 3 -> 2 -> 1
+    //第一直觉用动态规划，写完之后发现n太大的时候分配空间占据的时间会更多
+    //所以采用递归的方式调用，由于/2的话不超过32层，所以不会出现堆栈溢出
+    
+    int integerReplacement(int n) {
+        if (n==INT_MAX)
+            return 32;
+        if(n == 1)
+            return 0;
+        if (n%2==0)
+            return integerReplacement(n/2)+1;
+        else {
+            int l,r;
+            r=integerReplacement(n+1)+1;
+            l=integerReplacement(n-1)+1;
+            return min(r,l);
+        }
+    }
+    
+```
+
+
+
+
+
+### 位运算
+
+#### [231. 2的幂](https://leetcode-cn.com/problems/power-of-two/)
+
+```c++
+输入: 1
+输出: true
+解释: 20 = 1
+    bool isPowerOfTwo(int n) {
+        return (n>0&&!(n&n-1));
+    }
+```
+
+
+
+#### [342. 4的幂](https://leetcode-cn.com/problems/power-of-four/)
+
+```c++
+输入: 16
+输出: true
+bool isPowerOfFour(int num) {
+    // return (num>0&&((num|0x55555555)==0x55555555)&&!(num&num-1)||num==1);
+    if (num < 0 || num & (num-1)){//check(is or not) a power of 2.
+        return false;
+    }
+    return num & 0x55555555;//check 1 on odd bits
+}
+```
+
+
+
+#### [326. 3的幂](https://leetcode-cn.com/problems/power-of-three/)
+
+```c++
+输入: 27
+输出: true
+    //思路1 质因子，用最大的3^n_max/n 能够除尽就是。
+    //思路2 log 后round取整 pow 如果相等就是 
+    bool isPowerOfThree(int n) {
+        if (n<=0)
+            return false;
+        int res= (int)(log(n) / log(3)+0.5);
+	    return pow(3,res)==n;
+    }
+```
 
 
 
@@ -834,10 +1207,24 @@ int partitionDisjoint(vector<int>& A) {
 
 
 
+#### [190. 颠倒二进制位](https://leetcode-cn.com/problems/reverse-bits/)
 
+```c++
+输入: 00000010100101000001111010011100
+输出: 00111001011110000010100101000000
+解释: 输入的二进制串 00000010100101000001111010011100 表示无符号整数 43261596，
+      因此返回 964176192，其二进制表示形式为 00111001011110000010100101000000。
+    uint32_t reverseBits(uint32_t n) {
+        uint32_t res=0;
+        for (int i=0;i<32;i++){
+            res<<=1;
+            res|=n&1;
+            n>>=1;
 
-
-
+        }
+        return res;
+    }
+```
 
 
 
@@ -1260,7 +1647,310 @@ public:
 
 
 
+#### [598. 范围求和 II](https://leetcode-cn.com/problems/range-addition-ii/)
 
+给定一个初始元素全部为 **0**，大小为 m*n 的矩阵 **M** 以及在 **M** 上的一系列更新操作。
+
+操作用二维数组表示，其中的每个操作用一个含有两个**正整数 a** 和 **b** 的数组表示，含义是将所有符合 **0 <= i < a** 以及 **0 <= j < b** 的元素 **M[i][j]** 的值都**增加 1**。
+
+在执行给定的一系列操作后，你需要返回矩阵中含有最大整数的元素个数。
+
+**示例 1:**
+
+```c++
+输入: 
+m = 3, n = 3
+operations = [[2,2],[3,3]]
+输出: 4
+解释: 
+初始状态, M = 
+[[0, 0, 0],
+ [0, 0, 0],
+ [0, 0, 0]]
+执行完操作 [2,2] 后, M = 
+[[1, 1, 0],
+ [1, 1, 0],
+ [0, 0, 0]]
+执行完操作 [3,3] 后, M = 
+[[2, 2, 1],
+ [2, 2, 1],
+ [1, 1, 1]]
+M 中最大的整数是 2, 而且 M 中有4个值为2的元素。因此返回 4。
+// 脑筋急转弯 ，覆盖区域一定是全部重叠区域的值最大，只需要求所有区域的交集
+    int maxCount(int m, int n, vector<vector<int>>& ops) {
+        int minx = m, miny = n;
+        for ( auto val : ops ) {
+            minx = ( minx > val[0] ) ? val[0] : minx;
+            miny = ( miny > val[1] ) ? val[1] : miny;
+        }
+        return minx * miny;
+    }
+```
+
+#### [476. 数字的补数](https://leetcode-cn.com/problems/number-complement/)
+
+给定一个正整数，输出它的补数。补数是对该数的二进制表示取反。
+
+**注意:**
+
+1. 给定的整数保证在32位带符号整数的范围内。
+2. 你可以假定二进制数不包含前导零位。
+
+**示例 1:**
+
+```c++
+输入: 5
+输出: 2
+解释: 5的二进制表示为101（没有前导零位），其补数为010。所以你需要输出2。
+// 1\直觉就是创建一个掩码，然后和num按位取反之后的结果做与and&
+// 2\直觉与掩码做异或 return mask^num
+int findComplement(int num) {
+        int count = 0;
+        int temp = num;
+        int mask = 0;
+        if (num <= 0)
+            return 0;
+        while (temp) {
+            temp >>= 1;
+            // mask |= 1 << (count++);
+            mask = (mask<<1) +1;
+        }
+        // return mask & (~num);
+        return mask ^ num;
+    }
+```
+
+
+
+
+
+
+
+#### [202. 快乐数](https://leetcode-cn.com/problems/happy-number/)
+
+编写一个算法来判断一个数是不是“快乐数”。
+
+一个“快乐数”定义为：对于一个正整数，每一次将该数替换为它每个位置上的数字的平方和，然后重复这个过程直到这个数变为 1，也可能是无限循环但始终变不到 1。如果可以变为 1，那么这个数就是快乐数。
+
+**示例:** 
+
+```c++
+输入: 19
+输出: true
+解释: 
+12 + 92 = 82
+82 + 22 = 68
+62 + 82 = 100
+12 + 02 + 02 = 1
+// 主要思想，带记忆的递归，如果全局map中出现之前的值，说明出现了循环。
+    map <int ,bool> m;
+    bool isHappy(int n) {
+        int sum=0;
+        if (n==1)
+            return true;
+        if (m[n]==1){return false;}
+        m[n]=1;
+        while (n){
+            sum+=pow(n%10,2);
+            n/=10;
+        }
+        
+        return isHappy(sum);
+    }
+```
+
+
+
+#### [263. 丑数](https://leetcode-cn.com/problems/ugly-number/)
+
+编写一个程序判断给定的数是否为丑数。
+
+丑数就是只包含质因数 `2, 3, 5` 的**正整数**。
+
+**示例 1:**
+
+```c++
+输入: 6
+输出: true
+解释: 6 = 2 × 3
+    // 第一思路直接用递归求解
+    // 最优解由于2 3 5都是质数，所以直接循环相除。
+    bool isUgly(int num) {
+        if (num==2||num==3||num==5||num==1)
+            return true;
+        else if (num==0) return false;
+        bool fact=false;
+        if (num%2==0){
+            fact=fact||isUgly(num/2);
+        }
+        if (num%3==0){
+            fact=fact||isUgly(num/3);
+        }
+        if (num%5==0){
+            fact=fact||isUgly(num/5);
+        }
+        return fact;
+	}
+// 循环相除
+	if (num == 0) return false;
+        while (num % 5 == 0) {
+            num /= 5;
+        }
+        while (num % 3 == 0) {
+            num /= 3;
+        }
+        while (num % 2 == 0) {
+            num /= 2;
+        }
+        return num == 1;
+
+```
+
+
+
+### 二叉树
+
+#### [94. 二叉树的中序遍历](https://leetcode-cn.com/problems/binary-tree-inorder-traversal/)
+
+给定一个二叉树，返回它的*中序* 遍历。
+
+**示例:**
+
+```c++
+输入: [1,null,2,3]
+   1
+    \
+     2
+    /
+   3
+
+输出: [1,3,2]
+//递归方法
+vector<int> res;
+vector<int> inorderTraversal(TreeNode* root) {
+    if (!root)
+        return res;
+    inorderTraversal(root->left);
+    res.push_back(root->val);
+    inorderTraversal(root->right);
+    return res;
+}
+
+//非递归方法
+```
+
+
+
+
+
+
+
+#### [204. 计数质数](https://leetcode-cn.com/problems/count-primes/)
+
+统计所有小于非负整数 *n* 的质数的数量。
+
+**示例:**
+
+```c++
+输入: 10
+输出: 4
+解释: 小于 10 的质数一共有 4 个, 它们是 2, 3, 5, 7 。
+/* 第一直觉是，从0-n 挨个判断质数，结果TLE！
+   厄拉多筛法采用类似动态规划的方式，创建对应空间，然后从中筛去非质数。！！！
+厄拉多塞筛法. 比如说求20以内质数的个数,首先0,1不是质数.2是第一个质数,然后把20以内所有2的倍数划去.2后面紧跟的数即为下一个质数3,然后把3所有的倍数划去.3后面紧跟的数即为下一个质数5,再把5所有的倍数划去.以此类推.
+*/
+代码的实现上用了非常好的技巧:
+
+def countPrimes(self, n: int) -> int:
+        if n < 3:
+            return 0     
+        else:
+            # 首先生成了一个全部为1的列表
+            output = [1] * n
+            # 因为0和1不是质数,所以列表的前两个位置赋值为0
+            output[0],output[1] = 0,0
+             # 此时从index = 2开始遍历,output[2]==1,即表明第一个质数为2,然后将2的倍数对应的索引
+             # 全部赋值为0. 此时output[3] == 1,即表明下一个质数为3,同样划去3的倍数.以此类推.
+            for i in range(2,int(n**0.5)+1): 
+                if output[i] == 1:
+                    output[i*i:n:i] = [0] * len(output[i*i:n:i])
+         # 最后output中的数字1表明该位置上的索引数为质数,然后求和即可.
+        return sum(output)
+在上面遍历索引的时候用到了一个非常好的技巧. 即i是从(2,int(n**0.5)+1)而非(2,n).这个技巧是可以验证的,比如说求9以内的质数个数,那么只要划掉sqrt(9)以内的质数倍数,剩下的即全为质数. 所以在划去倍数的时候也是从i*i开始划掉,而不是i+i.
+     int countPrimes(int n) {
+        if (n<1)
+            return 0;
+        int *p = new int [n+1]{0};
+        int count=0;
+        p[0]=p[1]=1;
+        for (int i=2;i<sqrt(n);i++){
+            if (p[i]==0){
+                for (int j=i*i;j<n;j+=i){
+                    p[j]=1;
+                }
+            }
+        }
+        for (int i=2;i<n;i++){
+            if (!p[i]) count++;
+        }
+        return count;
+    }
+```
+
+
+
+#### [279. 完全平方数](https://leetcode-cn.com/problems/perfect-squares/)
+
+给定正整数 *n*，找到若干个完全平方数（比如 `1, 4, 9, 16, ...`）使得它们的和等于 *n*。你需要让组成和的完全平方数的个数最少。
+
+**示例 1:**
+
+```c
+输入: n = 12
+输出: 3 
+解释: 12 = 4 + 4 + 4.
+    
+```
+
+
+
+
+
+
+
+
+
+### 创新思维
+
+
+
+#### [836. 矩形重叠](https://leetcode-cn.com/problems/rectangle-overlap/)
+
+矩形以列表 `[x1, y1, x2, y2]` 的形式表示，其中 `(x1, y1)` 为左下角的坐标，`(x2, y2)` 是右上角的坐标。
+
+如果相交的面积为正，则称两矩形重叠。需要明确的是，只在角或边接触的两个矩形不构成重叠。
+
+给出两个矩形，判断它们是否重叠并返回结果。
+
+**示例 1：**
+
+```c++
+输入：rec1 = [0,0,2,2], rec2 = [1,1,3,3]
+输出：true
+
+[7,8,13,15]
+[10,8,12,20]
+// 注意一点！包含两种重叠方式，第一种是边界点在对方的矩阵里，第二种是边界点不在但是边线相交
+// 两种思路，第一种是按照deltaX'>0 *deltaX''<0 用乘积 ***注意乘积可能会超限
+		x1,y1,x2,y2=rec1
+        x3,y3,x4,y4=rec2
+        return (x3-x2)*(x4-x1)<0 and (y3-y2)*(y4-y1)<0
+    //第二种思路是 ，通过判断不相交的情况，然后取反！
+    return !(rec1[0]>=rec2[2] || rec1[2]<=rec2[0] || rec1[1]>=rec2[3] || rec1[3]<=rec2[1]);
+bool isRectangleOverlap(vector<int>& rec1, vector<int>& rec2) {
+        return !(rec1[0]>=rec2[2] || rec1[2]<=rec2[0] || rec1[1]>=rec2[3] || rec1[3]<=rec2[1]);
+    }
+```
 
 
 
@@ -1321,6 +2011,21 @@ void printAll(vector<T> t){
     }
 }
 ```
+
+### 初始化列表
+
+```c++
+    int a1, a2;
+    vector <int> res = { a1,a2 };
+	int a[20]={0}//不允许除了0以外的初始化 使用memset(a,0,100)//按字节填充
+```
+### 最大整数/最小整数
+
+```c++
+INT_MAX;
+INT_MIN;
+```
+
 
 ## algorithm库
 
