@@ -1899,6 +1899,240 @@ def countPrimes(self, n: int) -> int:
 
 
 
+
+
+
+
+
+
+#### [101. 对称二叉树](https://leetcode-cn.com/problems/symmetric-tree/)
+
+给定一个二叉树，检查它是否是镜像对称的。
+
+例如，二叉树 `[1,2,2,3,4,4,3]` 是对称的。
+
+```c++
+    1
+   / \
+  2   2
+ / \ / \
+3  4 4  3
+
+//第一想法是层次遍历然后做回文比较
+//然后想可不可以做前序遍历和反向(先右后左)前序遍历
+//* 最优解  
+//使用递归方法，左右分叉，同向查找比对，不符合就false
+//使用迭代方法，创建队列，但是不按层次遍历顺序，而是按照反向顺序插入。
+
+class Solution {
+public:
+    bool isSymmetric(TreeNode* root) {
+        return ismirror(root,root);
+    }
+    
+    bool ismirror(TreeNode* p,TreeNode* q){
+        if(!p&&!q)//都为NULL
+            return true;
+        if(!p||!q)//有一个为NULL
+            return false;
+        if(p->val==q->val)
+            return ismirror(p->left,q->right)&&ismirror(p->right,q->left);
+        return false;
+    }
+};
+
+//迭代方法，操作分离左右按照顺序入站
+bool go(TreeNode *root){
+        queue<TreeNode *> q;
+        q.push(root);
+        q.push(root);
+        while(!q.empty()){
+            TreeNode *c1=q.front();
+            q.pop();
+            TreeNode *c2=q.front();
+            q.pop();
+            if (!c1&&!c2)
+                continue;
+            else if (!c1||!c2)
+                return false;
+            else if (c1->val==c2->val){
+                q.push(c1->left);
+                q.push(c2->right);
+                
+                q.push(c1->right);
+                q.push(c2->left);
+            }
+            else return false;
+        }
+        return true;
+    }
+```
+
+
+
+#### [606. 根据二叉树创建字符串](https://leetcode-cn.com/problems/construct-string-from-binary-tree/)
+
+
+
+你需要采用前序遍历的方式，将一个二叉树转换成一个由括号和整数组成的字符串。
+
+空节点则用一对空括号 "()" 表示。而且你需要省略所有不影响字符串与原始二叉树之间的一对一映射关系的空括号对。
+
+**示例 1:**
+
+```c++
+输入: 二叉树: [1,2,3,4]
+       1
+     /   \
+    2     3
+   /    
+  4     
+
+输出: "1(2(4))(3)"
+
+解释: 原本将是“1(2(4)())(3())”，
+在你省略所有不必要的空括号对之后，
+它将是“1(2(4))(3)”。
+输入: 二叉树: [1,2,3,null,4]
+       1
+     /   \
+    2     3
+     \  
+      4 
+
+输出: "1(2()(4))(3)"
+
+//第一直觉是使用递归
+//递归需要考虑很多条件因素，一开始使用void作为返回值，结果在调用的时候遇到各种bug，然后改成string通过
+    string tree2str(TreeNode* t) {
+        string res = "";
+        if(t==NULL) return res;
+        if(t->left==NULL && t->right == NULL){
+            res.append(to_string(t->val));
+            return res;
+        }
+        res.append(to_string(t->val));
+        res+=("("+tree2str(t->left)+")");
+        if(t->right!=NULL)
+        res+=("("+tree2str(t->right)+")");
+        return res;
+    }
+
+```
+
+
+
+#### [116. 填充每个节点的下一个右侧节点指针](https://leetcode-cn.com/problems/populating-next-right-pointers-in-each-node/)
+
+给定一个**完美二叉树**，其所有叶子节点都在同一层，每个父节点都有两个子节点。二叉树定义如下：
+
+```c++
+struct Node {
+  int val;
+  Node *left;
+  Node *right;
+  Node *next;
+}
+//拿到的时候毫无头绪，想不到递归的条件，想着两个节点一起进入递归，然后seal在一起，但这样就无法处理相邻的节点。看了评论恍然大悟。。。还是想法不够清晰。
+//递归版
+
+class Solution {
+public:
+    void connect(TreeLinkNode *root) {
+        if (root == NULL || root->left == NULL)
+            return;
+        root->left->next = root->right;
+        if (root->next)
+            root->right->next = root->next->left;
+        connect(root->left);
+        connect(root->right);
+    }
+};
+//非递归就是用两个指针，分别指两层。
+	void connect(TreeLinkNode *root) {
+        if (root == NULL)
+            return;
+        TreeLinkNode* pre = root;
+        TreeLinkNode* cur = NULL;
+        while (pre->left)
+        {
+            cur = pre;
+            while (cur)
+            {
+                cur->left->next = cur->right;
+                if (cur->next)
+                    cur->right->next = cur->next->left;
+                cur = cur->next;
+            }
+            pre = pre->left;
+        }
+    }
+```
+
+填充它的每个 next 指针，让这个指针指向其下一个右侧节点。如果找不到下一个右侧节点，则将 next 指针设置为 `NULL`。
+
+初始状态下，所有 next 指针都被设置为 `NULL`。
+
+ 
+
+**示例：**
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2019/02/15/116_sample.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #### [279. 完全平方数](https://leetcode-cn.com/problems/perfect-squares/)
 
 给定正整数 *n*，找到若干个完全平方数（比如 `1, 4, 9, 16, ...`）使得它们的和等于 *n*。你需要让组成和的完全平方数的个数最少。
@@ -1941,11 +2175,11 @@ def countPrimes(self, n: int) -> int:
 [7,8,13,15]
 [10,8,12,20]
 // 注意一点！包含两种重叠方式，第一种是边界点在对方的矩阵里，第二种是边界点不在但是边线相交
-// 两种思路，第一种是按照deltaX'>0 *deltaX''<0 用乘积 ***注意乘积可能会超限
+// 两种思路，直觉判断相交的可能第一种是按照deltaX'>0 *deltaX''<0 用乘积 ***注意乘积可能会超限
 		x1,y1,x2,y2=rec1
         x3,y3,x4,y4=rec2
         return (x3-x2)*(x4-x1)<0 and (y3-y2)*(y4-y1)<0
-    //第二种思路是 ，通过判断不相交的情况，然后取反！
+    //第二种思路是 ，通过判断不相交的情况，然后取反
     return !(rec1[0]>=rec2[2] || rec1[2]<=rec2[0] || rec1[1]>=rec2[3] || rec1[3]<=rec2[1]);
 bool isRectangleOverlap(vector<int>& rec1, vector<int>& rec2) {
         return !(rec1[0]>=rec2[2] || rec1[2]<=rec2[0] || rec1[1]>=rec2[3] || rec1[3]<=rec2[1]);
@@ -1954,7 +2188,46 @@ bool isRectangleOverlap(vector<int>& rec1, vector<int>& rec2) {
 
 
 
+#### [264. 丑数 II](https://leetcode-cn.com/problems/ugly-number-ii/)
 
+编写一个程序，找出第 `n` 个丑数。
+
+丑数就是只包含质因数 `2, 3, 5` 的**正整数**。
+
+**示例:**
+
+```c++
+输入: n = 10
+输出: 12
+解释: 1, 2, 3, 4, 5, 6, 8, 9, 10, 12 是前 10 个丑数。
+1 是丑数。
+n 不超过1690。
+// 直觉穷举，n=1690时乘积会很大，穷举会超时 达到：2123366400
+// 三指针方法，一个生成队列，然后三个指针指向的对象分别乘2，3，5，然后比较大小。原理是因为每次都从生成的序列中取最小的那个加到生成队列最后（需要注意去重，但是由于三个质因子，所以不会重复）
+//2    a 
+// 1 2 3 4 5
+//3  b
+//5  c
+// 比较可以得出下一个值是2*v[b]||2*v[a]
+    int nthUglyNumber(int n) {
+        vector <int> v;
+        v.push_back(0);
+        v.push_back(1);
+        int a,b,c;
+        a=b=c=1;
+        for (int i=1;i<n;i++){
+            int ra=v[a]*2,rb=v[b]*3,rc=v[c]*5;
+            int minimal= min(ra,min(rb,rc));
+            // 需要注意，当
+            if (minimal==ra)a++;
+            if (minimal==rb)b++;
+            if (minimal==rc)c++;
+            v.push_back(minimal);
+        }
+        return v[n];
+    }
+
+```
 
 
 
@@ -2018,6 +2291,14 @@ void printAll(vector<T> t){
     int a1, a2;
     vector <int> res = { a1,a2 };
 	int a[20]={0}//不允许除了0以外的初始化 使用memset(a,0,100)//按字节填充
+// 可以直接返回初始化列表
+vector<int> function(int _x,int _y){
+    return {_x,_y};
+}
+	
+
+
+
 ```
 ### 最大整数/最小整数
 
