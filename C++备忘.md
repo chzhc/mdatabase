@@ -1759,6 +1759,62 @@ int findComplement(int num) {
     }
 ```
 
+#### [917. 仅仅反转字母](https://leetcode-cn.com/problems/reverse-only-letters/)
+
+给定一个字符串 `S`，返回 “反转后的” 字符串，其中不是字母的字符都保留在原地，而所有字母的位置发生反转。
+
+ 
+
+
+
+**示例 1：**
+
+```
+输入："ab-cd"
+输出："dc-ba"
+```
+
+**示例 2：**
+
+```
+输入："a-bC-dEf-ghIj"
+输出："j-Ih-gfE-dCba"
+```
+
+**示例 3：**
+
+```c++
+输入："Test1ng-Leet=code-Q!"
+输出："Qedo1ct-eeLg=ntse-T!"
+
+    string reverseOnlyLetters(string S) {
+        int l=0,r=S.size()-1;
+        char temp;
+        while (l<r){
+            while(l<S.size()-1&&!isalpha(S[l]))l++;
+            while(r>0&&!isalpha(S[r]))r--;
+            if (l>r)
+                break;
+            //
+            temp=S[l];
+            S[l]=S[r];
+            S[r]=temp;
+            l++;r--;
+        }
+        return S;
+    }
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
 #### [263. 丑数](https://leetcode-cn.com/problems/ugly-number/)
@@ -1805,6 +1861,245 @@ int findComplement(int num) {
         return num == 1;
 
 ```
+
+你将得到一个字符串数组 `A`。
+
+如果经过任意次数的移动，S == T，那么两个字符串 `S` 和 `T` 是*特殊等价*的。
+
+ 
+
+一次*移动*包括选择两个索引 `i` 和 `j`，且 `i％2 == j％2`，并且交换 `S[j]` 和 `S [i]`。
+
+现在规定，*A 中的特殊等价字符串组*是 `A` 的非空子集 `S`，这样不在 `S` 中的任何字符串与 `S` 中的任何字符串都不是特殊等价的。
+
+ 
+
+返回 `A` 中特殊等价字符串组的数量。
+
+ 
+
+
+
+**示例 1：**
+
+```
+输入：["a","b","c","a","c","c"]
+输出：3
+解释：3 组 ["a","a"]，["b"]，["c","c","c"]
+```
+
+**示例 2：**
+
+```
+输入：["aa","bb","ab","ba"]
+输出：4
+解释：4 组 ["aa"]，["bb"]，["ab"]，["ba"]
+```
+
+**示例 3：**
+
+方法：计数
+
+**思路和算法**
+
+让我们试着表述一个特殊等价的字符串 S*S*，通过找到函数 \mathcal{C}C 使得 S \equiv T \iff \mathcal{C}(S) = \mathcal{C}(T)*S*≡*T*⟺C(*S*)=C(*T*)。
+
+通过交换，我们可以排列偶数索引字母和奇数索引字母。这些排列的特征在于字母的数量：所有这样的排列都有相同的数量，不同的数量会产生不同的排列。
+
+因此，函数 \mathcal{C}(S) =C(*S*)=（S 中偶数索引字母的数量，其后是 S 中奇数索引字母的数量）成功地刻画了这一等价关系。
+
+然后，我们统计出满足 S \in A*S*∈*A* 的 \mathcal{C}(S)C(*S*) 的数量。
+
+```c++
+输入：["abc","acb","bac","bca","cab","cba"]
+输出：3
+解释：3 组 ["abc","cba"]，["acb","bca"]，["bac","cab"]
+//我的想法是对奇数的提取出来之后排序，偶数提出排序，然后合并这个作为map的key，最后计数map的key个数即可（也可以使用set）
+//最优解，奇偶数分离开来统计计数，然后将整个作为一个字符串放入set中。
+class Solution {
+    public int numSpecialEquivGroups(String[] A) {
+        Set<String> seen = new HashSet();
+        for (String S: A) {
+            int[] count = new int[52];
+            for (int i = 0; i < S.length(); ++i)
+                count[S.charAt(i) - 'a' + 26 * (i % 2)]++;
+            seen.add(Arrays.toString(count));
+        }
+        return seen.size();
+    }
+}
+```
+
+
+
+#### [43. 字符串相乘](https://leetcode-cn.com/problems/multiply-strings/)
+
+给定两个以字符串形式表示的非负整数 `num1` 和 `num2`，返回 `num1` 和 `num2` 的乘积，它们的乘积也表示为字符串形式。
+
+**示例 1:**
+
+```
+输入: num1 = "2", num2 = "3"
+输出: "6"
+```
+
+**示例 2:**
+
+```c++
+输入: num1 = "123", num2 = "456"
+输出: "56088"
+//直觉想法就是相乘然后进位,只要按照想法来，然后保存结果到乘积里，每次进位的时候避免重复计算即可，也可以用进位的方法做，但是可能比较容易出现差错，还有一点是容易被"123"搞混低位的位置，"123"的字符串低位在左边，而不是逻辑上的低位！！！！！！！
+    string multiply(string num1, string num2) {
+        if (num1=="0"||num2=="0")
+            return "0";
+        int len1 = num1.size()-1;
+        int len2 = num2.size()-1;
+        vector<int> res(len1 + len2 + 2, 0);
+        int tempsum;
+        for (int i = len1; i >= 0; i--) {
+
+            for (int j = len2; j >= 0; j--) {
+                tempsum = (num1[i] - '0')*(num2[j] - '0');
+                //先取出低位的内容
+                tempsum += res[i + j + 1];
+                //高位
+                res[i + j] += tempsum / 10;
+                //低位
+                res[i + j + 1] = tempsum % 10;
+            }
+        }
+        string r;
+        for (auto i : res) {
+            r.push_back(i + '0');
+        }
+        //
+        int pos = 0;
+        while (r[pos] == '0')pos++;
+        return r.substr(pos);
+    }
+```
+
+**说明：**
+
+1. `num1` 和 `num2` 的长度小于110。
+2. `num1` 和 `num2` 只包含数字 `0-9`。
+3. `num1` 和 `num2` 均不以零开头，除非是数字 0 本身。
+4. **不能使用任何标准库的大数类型（比如 BigInteger）**或**直接将输入转换为整数来处理**。
+
+
+
+
+
+#### [66. 加一](https://leetcode-cn.com/problems/plus-one/)
+
+给定一个由**整数**组成的**非空**数组所表示的非负整数，在该数的基础上加一。
+
+最高位数字存放在数组的首位， 数组中每个元素只存储一个数字。
+
+你可以假设除了整数 0 之外，这个整数不会以零开头。
+
+**示例 1:**
+
+```
+输入: [1,2,3]
+输出: [1,2,4]
+解释: 输入数组表示数字 123。
+```
+
+**示例 2:**
+
+```c++
+输入: [4,3,2,1]
+输出: [4,3,2,2]
+解释: 输入数组表示数字 4321。
+// 马虎的人注意进位
+	vector<int> plusOne(vector<int>& digits) {
+        bool carry=true;
+        for (int i=digits.size()-1;i>=0;--i){
+            digits[i]+=carry;
+            if (digits[i]>9){
+                carry=true;
+                digits[i]%=10;
+            }
+            else carry=false;
+        }
+        if (carry)
+        {
+            vector<int> r(digits.size()+1,1);
+            for (int i=0;i<digits.size();i++)r[i+1]=digits[i];
+            return r;
+        }
+        return digits;
+    }
+```
+
+#### [989. 数组形式的整数加法](https://leetcode-cn.com/problems/add-to-array-form-of-integer/)
+
+对于非负整数 `X` 而言，*X* 的*数组形式*是每位数字按从左到右的顺序形成的数组。例如，如果 `X = 1231`，那么其数组形式为 `[1,2,3,1]`。
+
+给定非负整数 `X` 的数组形式 `A`，返回整数 `X+K` 的数组形式。
+
+ **示例 1：**
+
+```
+输入：A = [1,2,0,0], K = 34
+输出：[1,2,3,4]
+解释：1200 + 34 = 1234
+```
+
+**解释 2：**
+
+```
+输入：A = [2,7,4], K = 181
+输出：[4,5,5]
+解释：274 + 181 = 455
+```
+
+**示例 3：**
+
+```
+输入：A = [2,1,5], K = 806
+输出：[1,0,2,1]
+解释：215 + 806 = 1021
+```
+
+**示例 4：**
+
+```c++
+输入：A = [9,9,9,9,9,9,9,9,9,9], K = 1
+输出：[1,0,0,0,0,0,0,0,0,0,0]
+解释：9999999999 + 1 = 10000000000
+//将K转换成vector处理，我倾向于将vector reverse之后相加，不容易出现边界问题
+        string addStrings(string num1, string num2) {
+        reverse(num1.begin(),num1.end());
+        reverse(num2.begin(),num2.end());
+        int a,b,carry=0,sum=0;
+        string res;
+        for (int i=0;i<num1.size()||i<num2.size();i++){
+            a=(i<num1.size())?num1[i]-'0':0;
+            b=(i<num2.size())?num2[i]-'0':0;
+            sum=carry+a+b;
+            carry=sum/10;
+            res+='0'+sum%10;
+        }
+        if (carry)
+            res+='1';
+        reverse(res.begin(),res.end());
+        return res;
+    }
+    
+```
+
+ 
+
+**提示：**
+
+1. `1 <= A.length <= 10000`
+2. `0 <= A[i] <= 9`
+3. `0 <= K <= 10000`
+4. 如果 `A.length > 1`，那么 `A[0] != 0`
+
+
 
 
 
@@ -2156,6 +2451,35 @@ public:
 
 ### 创新思维
 
+#### [521. 最长特殊序列 Ⅰ](https://leetcode-cn.com/problems/longest-uncommon-subsequence-i/)
+
+给定两个字符串，你需要从这两个字符串中找出最长的特殊序列。最长特殊序列定义如下：该序列为某字符串独有的最长子序列（即不能是其他字符串的子序列）。
+
+**子序列**可以通过删去字符串中的某些字符实现，但不能改变剩余字符的相对顺序。空序列为所有字符串的子序列，任何字符串为其自身的子序列。
+
+输入为两个字符串，输出最长特殊序列的长度。如果不存在，则返回 -1。
+
+**示例 :**
+
+```c++
+输入: "aba", "cdc"
+输出: 3
+解析: 最长特殊序列可为 "aba" (或 "cdc")
+    // 第一遍没有读懂，**空序列为所有字符串的子序列，任何字符串为其自身的子序列。**关键在于这句
+    // 返回最长的
+    int findLUSlength(string a, string b) {
+        if(a==b)
+            return -1;
+        else {
+            return a.size()>=b.size()?a.size():b.size();
+        }
+    }
+```
+
+
+
+
+
 
 
 #### [836. 矩形重叠](https://leetcode-cn.com/problems/rectangle-overlap/)
@@ -2231,6 +2555,64 @@ n 不超过1690。
 
 
 
+#### [401. 二进制手表](https://leetcode-cn.com/problems/binary-watch/)
+
+二进制手表顶部有 4 个 LED 代表**小时（0-11）**，底部的 6 个 LED 代表**分钟（0-59）**。
+
+每个 LED 代表一个 0 或 1，最低位在右侧。
+
+![img](https://upload.wikimedia.org/wikipedia/commons/8/8b/Binary_clock_samui_moon.jpg)
+
+例如，上面的二进制手表读取 “3:25”。
+
+给定一个非负整数 *n* 代表当前 LED 亮着的数量，返回所有可能的时间。
+
+**案例:**
+
+```c++
+输入: n = 1
+返回: ["1:00", "2:00", "4:00", "8:00", "0:01", "0:02", "0:04", "0:08", "0:16", "0:32"]
+//拿到之后毫无头绪，想着应该是一个回溯的问题，但是可能会出现分钟数超过60的情况要在回溯中删除
+// 评论中的一个创新方法，直接遍历所有的情况，从中筛选出二进制位数符合的方式，是一种反向思维的方式，可以借鉴，大规模的情况下还是需要使用回溯
+/*回溯步骤
+第一步：我们对于给定的亮的灯个数num进行分解，分成小时灯个数hoursCnt、分钟灯个数minsCnt。
+第二步：然后对小时灯个数hoursCnt小时的情况进行构造。（比如，当hoursCnt == 1，可以构造成小时为 1，2，4，8）
+第三步：接着对分钟灯个数minsCnt分钟的情况进行构造。（比如，当minsCnt== 1，可以构造成分钟为 1，2，4，8，16，32）
+第四步：最后将小时的集合和分钟集合进行搭配组合。
+*/
+vector<string> readBinaryWatch(int num) {
+        vector<string> res;
+        for (int i=0;i<12;i++){
+            for (int j=0;j<60;j++){
+                if (count1(i)+count1(j)==num)
+                {
+                    if (j<10)
+                        res.push_back(to_string(i)+":0"+to_string(j));
+                    else res.push_back(to_string(i)+":"+to_string(j));
+                }
+                    
+            }
+        }
+        return res;
+    }
+    int count1(int a){
+        int c=0;
+        while (a){
+            if (a&1)c++;
+            a>>=1;
+        }
+        return c;
+    }
+```
+
+
+
+
+
+
+
+
+
 # Tips
 
 ### 连续赋值原理
@@ -2267,6 +2649,7 @@ for(auto vv:v){ //容器必须支持iterator遍历
 sort(v.begin(),v.end(),cmp); //bool cmp(int a,int b){return a<b;}
 sort(v.begin(),v.end(),less<int>());//定义增加排序
 //lambda表达式
+//注意必须满足严格比较方式，即cmp(a,a)==false;!!!!!!!!!!!
 sort(v.begin(), v.end(), 
 		[](pair<string, int > a, pair<string, int > b)->
 		bool {return a.second < b.second; }
@@ -2294,18 +2677,24 @@ void printAll(vector<T> t){
 // 可以直接返回初始化列表
 vector<int> function(int _x,int _y){
     return {_x,_y};
-}
-	
-
-
-
+}	
 ```
 ### 最大整数/最小整数
 
 ```c++
 INT_MAX;
 INT_MIN;
+// defined by MSVC***********
 ```
+
+### 运行效率
+
+![1554338466126](/C:/Users/zch/AppData/Roaming/Typora/typora-user-images/1554338466126.png)
+
+不考虑优化的情况下采用G++编译结果，结果和期望一致，大循环在外的情况下会有更多的int创建和消除，最终效率低一点。
+
+
+
 
 
 ## algorithm库
