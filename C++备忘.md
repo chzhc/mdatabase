@@ -2829,9 +2829,53 @@ vector<string> readBinaryWatch(int num) {
 
 
 
+#### [1016. 子串能表示从 1 到 N 数字的二进制串](https://leetcode-cn.com/problems/binary-string-with-substrings-representing-1-to-n/)
+
+给定一个二进制字符串 `S`（一个仅由若干 '0' 和 '1' 构成的字符串）和一个正整数 `N`，如果对于从 `1` 到 `N` 的每个整数 `X`，其二进制表示都是 `S` 的子串，就返回 `true`，否则返回 `false`。
+
+ **提示：**
+
+1. `1 <= S.length <= 1000`
+2. `1 <= N <= 10^9`
+
+**示例 1：**
+
+```
+输入：S = "0110", N = 3
+输出：true
+```
+
+**示例 2：**
+
+```c++
+输入：S = "0110", N = 4
+输出：false
+// 观察可以得到 一次最多只要30位，然后只要将1-30位的内容全部遍历，最多遍历1000*30次
+ bool queryString(string S, int N) {
+        int len = S.size();
+        int mlen = S.size() > 30 ? 30 : S.size();
+        if (N > 30000) return false;
+        bool vis[30000] = { 0 };
+
+        for (int i = 0; i < S.size(); i++) {
+            // int rate=1;
+            int sum = 0;
+            for (int j = 0; j <= 30 && i + j < S.size(); j++) {
+                sum = (sum << 1) + S[i + j] - '0';
+                if (sum > N) break;
+                vis[sum] = 1;
+            }
+        }
+        for (int i = 1; i <= N; i++) {
+            if (vis[i] == 0)
+                return false;
+        }
+        return true;
+    }
 
 
 
+```
 
 
 
