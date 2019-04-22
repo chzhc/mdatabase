@@ -199,7 +199,7 @@ def model(X, W): # 预测函数
     return sigmoid(np.dot(X, W.T)) # 矩阵的乘法
 ```
 
-![img](assets/13424818-640c2e30f5c40eb4.webp)
+![img](assets/13424818-640c2e30f5c40eb4.jpg)
 
 ### 交叉熵损失函数
 
@@ -214,7 +214,7 @@ def cost(X, y, W):
 
 ### 计算梯度
 
-![img](assets/13424818-9d50e2b9a81979a1.webp)
+![img](assets/13424818-9d50e2b9a81979a1.jpg)
 
 ```python
 def gradient(X, y, theta):
