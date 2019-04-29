@@ -591,14 +591,14 @@ toupper('c');
 ## 骚操作
 
 * 创建一维数组代替二维，使用宏定义#define X(x) x/num 确定行号
-* 
+* ​
 
 ```c++
 name.erase(remove(name.begin(),name.end(),'.'),name.end());
 ```
 
 * 奇偶分块，双指针，一个从前向后，一个从后向前。
-* 
+* ​
 
 ```c++
     map<char,int> m;
@@ -2462,7 +2462,7 @@ class Solution {
 - `AB` 得 `A + B` 分，其中 A 和 B 是平衡括号字符串。
 - `(A)` 得 `2 * A` 分，其中 A 是平衡括号字符串。
 
- 
+
 
 **示例 1：**
 
@@ -3055,6 +3055,61 @@ vector<string> readBinaryWatch(int num) {
 
 
 
+#### [496. 下一个更大元素 I](https://leetcode-cn.com/problems/next-greater-element-i/)
+
+给定两个**没有重复元素**的数组 `nums1` 和 `nums2` ，其中`nums1` 是 `nums2` 的子集。找到 `nums1` 中每个元素在 `nums2` 中的下一个比其大的值。
+
+`nums1` 中数字 **x** 的下一个更大元素是指 **x** 在 `nums2` 中对应位置的右边的第一个比 **x** 大的元素。如果不存在，对应位置输出-1。
+
+**示例 1:**
+
+```c++
+输入: nums1 = [4,1,2], nums2 = [1,3,4,2].
+输出: [-1,3,-1]
+解释:
+    对于num1中的数字4，你无法在第二个数组中找到下一个更大的数字，因此输出 -1。
+    对于num1中的数字1，第二个数组中数字1右边的下一个较大数字是 3。
+    对于num1中的数字2，第二个数组中没有下一个更大的数字，因此输出 -1。
+//一个巧方法，采用stack将小的入栈，出栈的时候一直出到栈顶比当前位置大为止。    
+vector<int> nextGreaterElement(vector<int>& nums1, vector<int>& nums2) {
+        stack<int> s;
+        map<int,int> m;
+        vector<int> res;
+        for(int i=0;i<nums2.size();i++)
+        {
+            if (s.empty())
+                s.push(nums2[i]);
+            else{
+                if (s.top()>nums2[i]){
+                    s.push(nums2[i]);
+                }
+                else {
+                    while (!s.empty()&&s.top()<nums2[i]){
+                        m[s.top()]=nums2[i];
+                        s.pop();
+                    }
+                    s.push(nums2[i]);
+                }
+            }
+        }
+        while (!s.empty()){
+            m[s.top()]=-1;
+            s.pop();
+        }
+        
+        for (int i=0;i<nums1.size();i++){
+            res.push_back(m[nums1[i]]);
+        }
+        return res;
+    }
+```
+
+
+
+
+
+
+
 
 
 
@@ -3209,4 +3264,4 @@ sort(a.begin(),a.end()) //reverse the array;
 ### Notice
 
 * 位运算的优先级比`+`低！
-* 
+* ​
