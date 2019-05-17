@@ -181,6 +181,105 @@ np.concatenate( (a1,a2), axis=1 )  # 等价于  np.hstack( (a1,a2) )
 
 
 
+# Pandas操作
+
+### 创建DateFrame
+
+```python
+import pandas as pd
+# 创建简单的dataframe
+pd.DateFrame([[1,2,3],[4,5,6]],columns=list('ABC'))
+```
+
+
+
+### 读取read_csv
+
+```python
+df=pd.read_csv('filepath/filename.csv',encoding='gbk/gb18030/utf-8',na_values=['','[]','空'])
+```
+
+
+
+### 保存to_csv
+
+```python
+df.to_csv('restorepath/filename.csv',encoding='gb18030',index=False)
+```
+
+
+
+## 数据处理
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Keras
+
+
+
+
+
+
+
+## util
+
+
+
+
+
+### preprocess预处理操作
+
+提供文本，序列，图像的预处理 与sklearn的操作有重叠区域，但是封装的比sklearn更加高
+
+* Tokenizer 分词+LabelEncoder：会自动生成word_index(dict)，但是占用空间相较sklearn中的labelEncoder更高，速度更慢。PS. LabelEncoder的执行效率并不高，并没有结合pandas的values操作手写字典快。
+* 
+
+
+
+
+
+
+
+
+
+
+
+# Lambda表达式
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 逻辑运算符
+
+* not 
+* and
+* or
+* ~
+* !
+
 
 
 # Python实现逻辑回归
@@ -316,3 +415,12 @@ c.NotebookApp.allow_root = True
 ```
 
 以上设置完以后就可以在服务器上启动 `jupyter notebook`，`jupyter notebook`, `root` 用户使用 `jupyter notebook --allow-root`。打开 IP:指定的端口, 输入密码就可以访问了。
+
+
+
+
+
+
+
+
+
